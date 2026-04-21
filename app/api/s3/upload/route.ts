@@ -4,18 +4,10 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import s3Client from "@/lib/S3Client";
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import z from "zod";
+import { fileUploadSchema } from "@/lib/validations/s3-upload";
 import { auth } from "@/lib/auth";
 
-export const fileUploadSchema = z.object({
-  fileName: z.string().min(1, "File name is required"),
-  fileType: z.string().min(1, "File type is required"),
-  fileSize: z.number().min(1, "File size is required"),
-  isImage: z.boolean(),
-  courseName: z.string().optional(),
-  //    isPdf :z.boolean().optional(),
-  //    isVideo :z.boolean().optional(),
-});
+
 
 export async function POST(request: Request) {
   try {
