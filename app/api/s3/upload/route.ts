@@ -4,7 +4,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import s3Client from "@/lib/S3Client";
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { fileUploadSchema } from "@/lib/validations/s3-upload";
+import { fileUploadSchema } from "./schema";
 import { auth } from "@/lib/auth";
 
 
