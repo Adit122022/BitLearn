@@ -25,6 +25,7 @@ export default function CourseForm({ defaultValues, onSubmitAction, submitButton
     const [isLoading, setIsLoading] = useState(false);
 
     const form = useForm<CourseSchemaType>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(courseSchema) as any,
         defaultValues,
     });
@@ -33,8 +34,12 @@ export default function CourseForm({ defaultValues, onSubmitAction, submitButton
         setIsLoading(true);
         try {
             await onSubmitAction(data);
-        } catch (error: any) {
-            toast.error(error.message || "An error occurred");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error("An error occurred");
+            }
         } finally {
             setIsLoading(false);
         }

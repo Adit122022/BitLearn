@@ -39,7 +39,7 @@ export default async function ClassroomPage({ params, searchParams }: { params: 
             if (l) currentLesson = l;
         }
     }
-    
+
     // Default to first lesson if none selected
     if (!currentLesson && course.modules[0]?.lessons[0]) {
         currentLesson = course.modules[0].lessons[0];
@@ -61,11 +61,11 @@ export default async function ClassroomPage({ params, searchParams }: { params: 
                     {/* Video Player Placeholder */}
                     <div className="aspect-video w-full max-w-5xl mx-auto bg-black rounded-lg overflow-hidden flex items-center justify-center border shadow-lg relative group">
                         {currentLesson?.videoKey ? (
-                            <video 
-                                controls 
+                            <video
+                                controls
                                 className="w-full h-full object-contain bg-black"
                                 controlsList="nodownload"
-                                src={`https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.s3.${process.env.AWS_REGION}.amazonaws.com/${currentLesson.videoKey}`}
+                                src={`https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.tigrisfiles.io/${currentLesson.videoKey}`}
                                 poster={course.imageUrl || undefined}
                             >
                                 Your browser does not support the video tag.
@@ -102,8 +102,8 @@ export default async function ClassroomPage({ params, searchParams }: { params: 
                                 {mod.lessons.map((lesson, j) => {
                                     const isActive = currentLesson?.id === lesson.id;
                                     return (
-                                        <Link 
-                                            key={lesson.id} 
+                                        <Link
+                                            key={lesson.id}
                                             href={`/classroom/${course.id}?lessonId=${lesson.id}`}
                                             className={`flex items-start gap-3 p-3 rounded-md transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}
                                         >
@@ -116,7 +116,7 @@ export default async function ClassroomPage({ params, searchParams }: { params: 
                                                     {j + 1}. {lesson.title}
                                                 </p>
                                                 <p className="text-xs mt-1 opacity-70">
-                                                    {lesson.duration > 0 ? `${Math.floor(lesson.duration/60)}:${(lesson.duration%60).toString().padStart(2, '0')}` : 'Video'}
+                                                    {lesson.duration > 0 ? `${Math.floor(lesson.duration / 60)}:${(lesson.duration % 60).toString().padStart(2, '0')}` : 'Video'}
                                                 </p>
                                             </div>
                                         </Link>

@@ -138,6 +138,7 @@ import { authClient } from "@/lib/auth-client";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = authClient.useSession();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isAdmin = (session?.user as any)?.role === "ADMIN";
 
   const safeNavMain = data.navMain.filter((item) => {

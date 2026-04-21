@@ -74,7 +74,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full">
             <Button asChild size="lg" className="rounded-full w-full sm:w-auto h-14 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all group">
-              <Link href="/explore">
+              <Link href="/courses">
                 Explore More
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform ease-in-out" />
               </Link>

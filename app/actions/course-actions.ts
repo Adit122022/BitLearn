@@ -40,8 +40,8 @@ export async function createCourse(data: unknown) {
       smallDescription: courseData.smallDescription,
       slug: courseData.slug,
       status: courseData.status,
-      imageUrl: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.tigrisfiles.io/images/${courseData.fileKey}`,
-      userId: session.user.id,
+      imageUrl: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.tigrisfiles.io/${courseData.fileKey}`,
+      userId: session.user.id,  
     },
   });
 
@@ -72,7 +72,7 @@ export async function updateCourse(courseId: string, data: unknown) {
     data: {
       ...courseData,
       imageUrl: courseData.fileKey
-        ? `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.s3.${process.env.AWS_REGION}.amazonaws.com/images/${courseData.fileKey}`
+        ? `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.tigrisfiles.io/${courseData.fileKey}`
         : course.imageUrl,
     },
   });

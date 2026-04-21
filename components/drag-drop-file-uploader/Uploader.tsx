@@ -109,7 +109,7 @@ export default function Uploader({ onUploadComplete, value, acceptType = "image"
         }
     }
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
+    const onDrop = (acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
             const file = acceptedFiles[0];
             const previewUrl = URL.createObjectURL(file);
@@ -130,7 +130,7 @@ export default function Uploader({ onUploadComplete, value, acceptType = "image"
             // Start upload automatically
             uploadFile(file);
         }
-    }, [onUploadComplete]);
+    };
 
     function onDropRejected(filesRejection: FileRejection[]) {
         if (filesRejection.length) {

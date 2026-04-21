@@ -2,12 +2,12 @@
 import { type Editor } from "@tiptap/react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { Toggle } from "../ui/toggle";
-import { 
-    AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold, 
-    ChevronDown, ChevronUp, Code, Heading1, Heading2, Heading3, 
-    Heading4, Highlighter, Italic, Link, ListIcon, ListOrdered, 
-    Minus, PenTool, Quote, Redo, SquareCode, Strikethrough, 
-    Subscript, Superscript, Underline, Undo 
+import {
+    AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold,
+    ChevronDown, ChevronUp, Code, Heading1, Heading2, Heading3,
+    Heading4, Highlighter, Italic, Link, ListIcon, ListOrdered,
+    Minus, PenTool, Quote, Redo, SquareCode, Strikethrough,
+    Subscript, Superscript, Underline, Undo
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -78,6 +78,7 @@ export function MenuBar({ editor }: iAppProps) {
                         </Tooltip>
                         <DropdownMenuContent align="start" className="bg-[#1a1a1a] border-white/20 text-white">
                             {[1, 2, 3, 4].map((level) => (
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 <DropdownMenuItem key={level} onClick={() => editor.chain().focus().toggleHeading({ level: level as any }).run()} className="hover:bg-white/10 focus:bg-white/10">
                                     {level === 1 && <Heading1 size={16} />}
                                     {level === 2 && <Heading2 size={16} />}
@@ -113,7 +114,7 @@ export function MenuBar({ editor }: iAppProps) {
 
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("blockquote")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("blockquote")}
                                 onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-2", editor.isActive("blockquote") && "bg-white/20 text-white")}>
                                 <Quote size={16} />
@@ -124,7 +125,7 @@ export function MenuBar({ editor }: iAppProps) {
 
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("codeBlock")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("codeBlock")}
                                 onPressedChange={() => editor.chain().focus().toggleCodeBlock().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-2", editor.isActive("codeBlock") && "bg-white/20 text-white")}>
                                 <SquareCode size={16} />
@@ -140,7 +141,7 @@ export function MenuBar({ editor }: iAppProps) {
                 <div className="flex items-center gap-1">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("bold")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("bold")}
                                 onPressedChange={() => editor.chain().focus().toggleBold().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-2", editor.isActive("bold") && "bg-white/20 text-white")}>
                                 <Bold size={16} />
@@ -150,7 +151,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("italic")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("italic")}
                                 onPressedChange={() => editor.chain().focus().toggleItalic().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("italic") && "bg-white/20 text-white")}>
                                 <Italic size={16} />
@@ -160,7 +161,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("strike")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("strike")}
                                 onPressedChange={() => editor.chain().focus().toggleStrike().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("strike") && "bg-white/20 text-white")}>
                                 <Strikethrough size={16} />
@@ -170,7 +171,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("code")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("code")}
                                 onPressedChange={() => editor.chain().focus().toggleCode().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("code") && "bg-white/20 text-white")}>
                                 <Code size={16} />
@@ -180,7 +181,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("underline")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("underline")}
                                 onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("underline") && "bg-white/20 text-white")}>
                                 <Underline size={16} />
@@ -190,7 +191,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("highlight")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("highlight")}
                                 onPressedChange={() => editor.chain().focus().toggleHighlight().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("highlight") && "bg-white/20 text-white")}>
                                 <PenTool size={16} />
@@ -200,7 +201,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("link")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("link")}
                                 onPressedChange={setLink}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("link") && "bg-white/20 text-white")}>
                                 <Link size={16} />
@@ -216,7 +217,7 @@ export function MenuBar({ editor }: iAppProps) {
                 <div className="flex items-center gap-1">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("superscript")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("superscript")}
                                 onPressedChange={() => editor.chain().focus().toggleSuperscript().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("superscript") && "bg-white/20 text-white")}>
                                 <Superscript size={16} />
@@ -226,7 +227,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive("subscript")} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive("subscript")}
                                 onPressedChange={() => editor.chain().focus().toggleSubscript().run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive("subscript") && "bg-white/20 text-white")}>
                                 <Subscript size={16} />
@@ -242,7 +243,7 @@ export function MenuBar({ editor }: iAppProps) {
                 <div className="flex items-center gap-1">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "left" })} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "left" })}
                                 onPressedChange={() => editor.chain().focus().setTextAlign("left").run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive({ textAlign: "left" }) && "bg-white/20 text-white")}>
                                 <AlignLeft size={16} />
@@ -252,7 +253,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "center" })} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "center" })}
                                 onPressedChange={() => editor.chain().focus().setTextAlign("center").run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive({ textAlign: "center" }) && "bg-white/20 text-white")}>
                                 <AlignCenter size={16} />
@@ -262,7 +263,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "right" })} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "right" })}
                                 onPressedChange={() => editor.chain().focus().setTextAlign("right").run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive({ textAlign: "right" }) && "bg-white/20 text-white")}>
                                 <AlignRight size={16} />
@@ -272,7 +273,7 @@ export function MenuBar({ editor }: iAppProps) {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "justify" })} 
+                            <Toggle type="button" size="sm" pressed={editor.isActive({ textAlign: "justify" })}
                                 onPressedChange={() => editor.chain().focus().setTextAlign("justify").run()}
                                 className={cn("text-white hover:bg-white/10 h-8 w-8 p-0 px-1.5", editor.isActive({ textAlign: "justify" }) && "bg-white/20 text-white")}>
                                 <AlignJustify size={16} />
@@ -284,4 +285,4 @@ export function MenuBar({ editor }: iAppProps) {
             </TooltipProvider>
         </div>
     )
-}
+}

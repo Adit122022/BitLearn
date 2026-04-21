@@ -53,7 +53,7 @@ async function protect(req: Request): Promise<ArcjetDecision> {
     userId = ip(req) || "127.0.0.1"; // Fallback to Local IP
   }
   const url = new URL(req.url);
-  if (url.pathname.startsWith("api/auth/sign-up")) {
+  if (url.pathname.startsWith("/api/auth/sign-up")) {
     const body = await req.clone().json();
 
     //  If the email is in the body of the request then we can run
