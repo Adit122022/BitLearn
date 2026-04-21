@@ -102,7 +102,7 @@ export default function Navbar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuItem asChild>
-                <Link href="/profile">Profile
+                <Link href="/dashboard/profile">Profile
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </Link>
               </DropdownMenuItem>

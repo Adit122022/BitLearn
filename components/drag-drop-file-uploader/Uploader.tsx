@@ -7,8 +7,7 @@ import { cn } from '@/lib/utils'
 import { RenderEmptyState, RenderPreviewState } from './RenderState'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid';
-
-
+import { Progress } from '../ui/progress'
 
 interface UploaderState {
     id: string | null;
@@ -22,36 +21,97 @@ interface UploaderState {
     fileType: "image" | "video" | "pdf";
 }
 
+interface UploaderProps {
+    onUploadComplete?: (key: string) => void;
+    value?: string;
+}
 
-export default function Uploader() {
+export default function Uploader({ onUploadComplete, value }: UploaderProps) {
     const [fileState, setFileState] = useState<UploaderState>({
         id: null,
         file: null,
         uploading: false,
         progress: 0,
-        key: null,
+        key: value || null,
         isDeleting: false,
         error: false,
-        objectUrl: undefined,
+        objectUrl: value || undefined,
         fileType: "image",
     })
 
-function  uploadFile(file:File){
-    setFileState((prev)=>({...prev,uploading:true ,progress:0}));
+    async function uploadFile(file: File) {
+        setFileState((prev) => ({ ...prev, uploading: true, progress: 0 }));
 
-    try {
-        
-    } catch (error) {
-        
+        try {
+            // 1. Get presigned URL
+            const fileType = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "pdf";
+            
+            const res = await fetch("/api/s3/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    isImage: fileType === "image"
+                })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Failed to get upload URL");
+            }
+
+            const { presignedUrl, fileKey } = await res.json();
+
+            // 2. Upload to S3 using XHR to track progress
+            await new Promise<void>((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const progress = Math.round((event.loaded / event.total) * 100);
+                        setFileState((prev) => ({ ...prev, progress }));
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve();
+                    } else {
+                        reject(new Error("Failed to upload file to S3"));
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error("Network Error occurred"));
+                
+                xhr.open("PUT", presignedUrl);
+                xhr.setRequestHeader("Content-Type", file.type);
+                xhr.send(file);
+            });
+
+            // 3. Update state on success
+            setFileState((prev) => ({ ...prev, uploading: false, progress: 100, key: fileKey }));
+            toast.success("File uploaded successfully!");
+            
+            // Call the callback to inform parent component (e.g. valid fileKey for DB)
+            if (onUploadComplete) {
+                onUploadComplete(fileKey);
+            }
+
+        } catch (error: any) {
+            console.error("Upload error:", error);
+            setFileState((prev) => ({ ...prev, uploading: false, error: true }));
+            toast.error(error.message || "Something went wrong during upload");
+        }
     }
-}
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
             const file = acceptedFiles[0];
-            // Convert file to preview URL. In a real app, you would upload to a server here.
             const previewUrl = URL.createObjectURL(file);
             const fileType = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "pdf";
+            
             setFileState({
                 id: uuidv4(),
                 file,
@@ -62,11 +122,12 @@ function  uploadFile(file:File){
                 error: false,
                 objectUrl: previewUrl,
                 fileType,
-            })
+            });
            
-            toast.success("Image selected successfully");
+            // Start upload automatically
+            uploadFile(file);
         }
-    }, [])
+    }, [onUploadComplete]);
 
     function onDropRejected(filesRejection: FileRejection[]) {
         if (filesRejection.length) {
@@ -106,15 +167,18 @@ function  uploadFile(file:File){
             objectUrl: undefined,
             fileType: "image",
         });
+        if (onUploadComplete) {
+            onUploadComplete("");
+        }
     }
 
     return (
         <Card
             {...getRootProps()}
-            className={cn("relative border-2 border-dashed transition-all duration-300 ease-in-out w-full cursor-pointer min-h-[200px] flex items-center justify-center",
+            className={cn("relative border-2 border-dashed transition-all duration-300 ease-in-out w-full cursor-pointer min-h-[200px] flex items-center justify-center overflow-hidden",
                 isDragActive ? "border-primary bg-primary/5 border-solid scale-[1.01]" : "border-border border-dashed hover:border-primary/50 hover:bg-muted/30")}
         >
-            <CardContent className='flex items-center justify-center w-full p-0'>
+            <CardContent className='flex items-center justify-center w-full p-0 h-full relative'>
                 <input {...getInputProps()} />
 
                 {fileState.objectUrl ? (
@@ -122,8 +186,16 @@ function  uploadFile(file:File){
                 ) : (
                     <RenderEmptyState isDragActive={isDragActive} />
                 )}
+                
+                {fileState.uploading && (
+                    <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center p-6 backdrop-blur-sm z-10">
+                        <span className="text-sm font-medium mb-4">Uploading... {fileState.progress}%</span>
+                        <Progress value={fileState.progress} className="w-full max-w-[200px]" />
+                    </div>
+                )}
             </CardContent>
         </Card>
     )
 }
+
 

@@ -47,14 +47,14 @@ const data = {
       icon: IconListDetails,
     },
     {
+      title: "Teacher Applications",
+      url: "/admin/teacher-applications",
+      icon: IconUsers,
+    },
+    {
       title: "Analytics",
       url: "#",
       icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
     },
     {
       title: "Team",

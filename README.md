@@ -1,55 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BitLearn - Next.js Full Stack LMS
 
-## Getting Started
+BitLearn is a modern, full-stack Learning Management System (LMS) built with Next.js, Prisma, TailwindCSS, and AWS S3. It provides a complete end-to-end platform for instructors to create and sell video courses, and for students to discover, enroll in, and consume educational content.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Authentication & Authorization
+- **Role-Based Access Control (RBAC):** Users are authenticated using `better-auth` and assigned strict roles (`STUDENT`, `TEACHER`, `ADMIN`).
+- **Middleware Protection:** Route access is strictly protected. Students are locked out of `/admin` creator studios, while unauthenticated users are redirected to login pages before viewing the `/dashboard` or `/classroom`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Instructor Tools (Teacher Studio)
+- **Teacher Onboarding:** Users can dynamically apply to become instructors via the `/become-teacher` pipeline, which admins review via the `/admin/teacher-applications` dashboard.
+- **Course Creation & Editing:** A rich WYSIWYG editor and intuitive form interface component (`CourseForm`) allows teachers to draft, price, categorize, and categorize their courses.
+- **Curriculum Builder:** Teachers have access to an interactive drag-and-drop Curriculum Manager. They can define modules, toggle "free previews", and attach individual video lessons to their modules.
+- **Direct S3 Uploads:** An integrated Drag-and-Drop Uploader requests secure, short-lived presigned URLs from the Next.js API, pushing multi-gigabyte video artifacts directly to AWS S3 without blocking the Node server.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Student Experience
+- **Interactive Catalog:** The public `/courses` route displays all published courses in a modern, responsive grid.
+- **Landing Pages:** Beautiful detail pages (`/courses/[slug]`) breakdown the course curriculum, instructor bio, and pricing, with an integrated "Enroll" workflow.
+- **Student Dashboard:** Track enrolled courses and learning progress seamlessly.
+- **Classroom Player:** An immersive HTML5 Video Player (`/classroom/[courseId]`) streams course content directly from S3. It includes a collapsing sidebar that tracks the user's active module and lesson synchronicity.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠 Tech Stack
 
-## Learn More
+- **Framework:** Next.js 15 (App Router, Turbopack)
+- **Database:** PostgreSQL (Neon) via **Prisma ORM**
+- **Authentication:** Better-Auth (with specialized Admin plugins for RBAC)
+- **Storage:** AWS S3 (Using Presigned URLs via `@aws-sdk/client-s3`)
+- **Styling:** TailwindCSS v4 with Shadcn UI Components
+- **Forms & Validation:** React Hook Form + Zod + Sonner Toast Notifications
 
-To learn more about Next.js, take a look at the following resources:
+## 📂 Project Structure Highlights
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `app/actions/`: Encapsulated server actions handling DB mutations (courses, modules, enrollment, teacher applications).
+- `app/admin/`: Protected admin and teacher routes for course management.
+- `app/classroom/`: The core video player environment for enrolled students.
+- `app/api/s3/upload/`: Secure endpoint handling file metadata and authorizing pre-signed S3 PUT URLs.
+- `components/forms/CourseForm.tsx`: The primary reusable form logic abstracting complex validation.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚀 Getting Started
 
-## Deploy on Vercel
+1. Set up your `.env` with your Neon database URL, Better-Auth secrets, and AWS IAM Keys (S3 Bucket).
+2. Run database synchronization:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+3. Start the development server:
+   ```bash
+   pnpm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-
-
-```bash
-# this command has issue in my system
-# When you run pnpm dlx prisma, pnpm automatically ignores the version of Prisma you have installed in your project (which is v6.16.2) and downloads the latest available version from the npm registry (which is currently v7.7.0).
-
-# Prisma v7 introduced a major breaking change where they removed the url connection property from the schema.prisma file, requiring it to be moved to a new prisma.config.ts file instead. Because pnpm dlx grabbed Prisma v7, it tried to parse your Prisma v6 schema using Prisma v7 engine rules and threw that validation error.
-
- pnpm dlx prisma db push   -> push command in  prisma orm
-
-# run the version of Prisma that is already installed in your project (v6.x) instead of downloading the newest one.
-
-# To do this, stop using dlx and simply run Prisma through your package manager using exec or just directly:
-pnpm prisma db push
-# OR
-pnpm exec prisma db push
-
-```
+## 📝 Roadmap / Future Additions
+- **Real Payment Processing:** Replace the mock enrollment system with Stripe/Razorpay webhooks.
+- **Progress Tracking:** Connect the classroom sidebar markers directly to database "completed" states.
+- **Analytics Dashboard:** Build out the admin `/analytics` routes to show instructor revenue and student engagement metrics.

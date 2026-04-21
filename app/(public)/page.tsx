@@ -92,12 +92,55 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Decorative dots pattern at the bottom */}
+      {/* Decorative Dashboard Mockup at the bottom */}
       <div className="mt-8 w-full max-w-5xl h-[250px] md:h-[350px] relative rounded-t-2xl border-t border-x bg-card/30 backdrop-blur-3xl shadow-2xl overflow-hidden mx-6">
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
-        <div className="text-center text-muted-foreground flex items-center justify-center h-full ">hello</div>
-        <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1] bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
-        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-20" />
+        
+        {/* Mockup UI Window */}
+        <div className="w-full h-full p-4 md:p-8 opacity-80 pointer-events-none scale-100 origin-top">
+          {/* Mock Header */}
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-3 h-3 rounded-full bg-red-500/50" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+            <div className="w-3 h-3 rounded-full bg-green-500/50" />
+            <div className="ml-4 h-4 w-64 bg-muted-foreground/10 rounded-full" />
+          </div>
+          
+          {/* Mock Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Sidebar Mock */}
+            <div className="hidden md:block col-span-1 space-y-4">
+              <div className="h-8 w-24 bg-primary/20 rounded-lg mb-8" />
+              <div className="space-y-3">
+                <div className="h-4 w-full bg-muted-foreground/10 rounded-full" />
+                <div className="h-4 w-5/6 bg-muted-foreground/10 rounded-full" />
+                <div className="h-4 w-4/6 bg-muted-foreground/10 rounded-full" />
+                <div className="h-4 w-full bg-muted-foreground/10 rounded-full" />
+              </div>
+            </div>
+
+            {/* Content Mock */}
+            <div className="col-span-1 md:col-span-2 space-y-6">
+              <div className="aspect-video w-full rounded-xl bg-gradient-to-tr from-indigo-500/10 to-primary/10 border border-primary/20 flex flex-col justify-end p-4">
+                 <div className="h-3 w-1/4 bg-primary/30 rounded-full mb-2" />
+                 <div className="h-2 w-1/2 bg-foreground/10 rounded-full" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-24 rounded-lg border bg-muted/30 p-3">
+                  <div className="h-3 w-1/2 bg-foreground/10 rounded-full mb-4" />
+                  <div className="h-2 w-3/4 bg-foreground/10 rounded-full" />
+                </div>
+                <div className="h-24 rounded-lg border bg-muted/30 p-3">
+                  <div className="h-3 w-1/2 bg-foreground/10 rounded-full mb-4" />
+                  <div className="h-2 w-3/4 bg-foreground/10 rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1] bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] z-10" />
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent z-30" />
       </div>
 
       {/* Features Section */}
