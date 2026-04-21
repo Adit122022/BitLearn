@@ -5,16 +5,18 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { authClient } from '@/lib/auth-client'
 import { Loader2, MailIcon } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useState, useTransition } from 'react'
+import React, { Suspense, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
-const VerifyRequestPage = () => {
+// Extracted into a child component because useSearchParams() requires
+// a Suspense boundary in Next.js 15 during static prerendering.
+function VerifyRequestContent() {
     const router = useRouter();
     const [otp, setOtp] = useState("");
     const [emailPending, startEmailTransition] = useTransition();
     const email = useSearchParams().get("email");
     const isOtpCompleted = otp.length === 6;
-    // verfication of email
+
     function VerifyOtp() {
         startEmailTransition(async () => {
             await authClient.signIn.emailOtp({
@@ -27,6 +29,7 @@ const VerifyRequestPage = () => {
             })
         })
     }
+
     return (
         <Card className='w-full mx-auto'>
             <CardHeader className='text-center'>
@@ -69,4 +72,14 @@ const VerifyRequestPage = () => {
     )
 }
 
-export default VerifyRequestPage
+export default function VerifyRequestPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex justify-center items-center min-h-[200px]">
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+        }>
+            <VerifyRequestContent />
+        </Suspense>
+    )
+}
