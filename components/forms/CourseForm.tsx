@@ -105,7 +105,7 @@ export default function CourseForm({ defaultValues, onSubmitAction, submitButton
                 <FormField control={form.control} name="fileKey" render={({ field }) => (
                     <FormItem className="w-full">
                         <FormLabel>Thumbnail Image</FormLabel>
-                        <Uploader onUploadComplete={field.onChange} value={field.value} />
+                        <Uploader onUploadComplete={field.onChange} value={field.value} courseName={form.watch("title")} />
                         <FormMessage />
                     </FormItem>
                 )} />

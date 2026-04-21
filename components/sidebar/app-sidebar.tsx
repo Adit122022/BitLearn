@@ -52,6 +52,11 @@ const data = {
       icon: IconUsers,
     },
     {
+      title: "User Management",
+      url: "/admin/users",
+      icon: IconSettings,
+    },
+    {
       title: "Analytics",
       url: "#",
       icon: IconChartBar,
@@ -129,7 +134,19 @@ const data = {
   ],
 }
 
+import { authClient } from "@/lib/auth-client";
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = authClient.useSession();
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+
+  const safeNavMain = data.navMain.filter((item) => {
+    if (item.title === "Teacher Applications" || item.title === "User Management") {
+        return isAdmin;
+    }
+    return true;
+  });
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -148,7 +165,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={safeNavMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

@@ -121,6 +121,13 @@ export default function Navbar() {
                   <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                 </Link>
               </DropdownMenuItem>
+              {((session?.user as any)?.role === "ADMIN" || (session?.user as any)?.role === "TEACHER") && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">Teacher Studio
+                      <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
+                    </Link>
+                  </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignout} className="text-rose-500 cursor-pointer">

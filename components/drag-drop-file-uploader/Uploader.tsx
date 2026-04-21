@@ -24,9 +24,11 @@ interface UploaderState {
 interface UploaderProps {
     onUploadComplete?: (key: string) => void;
     value?: string;
+    acceptType?: "image" | "video";
+    courseName?: string;
 }
 
-export default function Uploader({ onUploadComplete, value }: UploaderProps) {
+export default function Uploader({ onUploadComplete, value, acceptType = "image", courseName }: UploaderProps) {
     const [fileState, setFileState] = useState<UploaderState>({
         id: null,
         file: null,
@@ -53,7 +55,8 @@ export default function Uploader({ onUploadComplete, value }: UploaderProps) {
                     fileName: file.name,
                     fileType: file.type,
                     fileSize: file.size,
-                    isImage: fileType === "image"
+                    isImage: fileType === "image",
+                    courseName
                 })
             });
 
@@ -137,9 +140,9 @@ export default function Uploader({ onUploadComplete, value }: UploaderProps) {
             if (errorCode === "too-many-files") {
                 toast.error("Too many files. Maximum is 1.");
             } else if (errorCode === "file-too-large") {
-                toast.error("File is too large. Maximum is 5MB.");
+                toast.error(`File is too large. Maximum is ${acceptType === "image" ? "5MB" : "1GB"}.`);
             } else if (errorCode === "file-invalid-type") {
-                toast.error("Invalid file type. Please upload an image.");
+                toast.error(`Invalid file type. Please upload a ${acceptType}.`);
             } else {
                 toast.error(rejected.errors[0].message);
             }
@@ -148,9 +151,11 @@ export default function Uploader({ onUploadComplete, value }: UploaderProps) {
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        accept: { "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"] },
+        accept: acceptType === "image" 
+            ? { "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"] }
+            : { "video/*": [".mp4", ".mov", ".avi", ".webm"] },
         maxFiles: 1,
-        maxSize: 5 * 1024 * 1024, // 5 mb
+        maxSize: acceptType === "image" ? 5 * 1024 * 1024 : 1000 * 1024 * 1024,
         multiple: false,
         onDropRejected,
     });

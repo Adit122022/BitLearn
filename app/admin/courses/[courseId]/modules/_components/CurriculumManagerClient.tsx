@@ -186,7 +186,7 @@ export default function CurriculumManagerClient({ course }: { course: any }) {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label>Lesson Video (Optional)</Label>
-                                                        <Uploader onUploadComplete={setNewLessonVideoKey} value={newLessonVideoKey} />
+                                                        <Uploader onUploadComplete={setNewLessonVideoKey} value={newLessonVideoKey} acceptType="video" courseName={course.title} />
                                                         <p className="text-xs text-muted-foreground">The platform currently supports uploading to S3 directly.</p>
                                                     </div>
                                                     <Button type="submit" disabled={isLoading} className="w-full">Save Lesson</Button>

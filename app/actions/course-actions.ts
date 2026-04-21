@@ -40,7 +40,7 @@ export async function createCourse(data: unknown) {
       smallDescription: courseData.smallDescription,
       slug: courseData.slug,
       status: courseData.status,
-      imageUrl: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.storage.dev/images/${courseData.fileKey}`,
+      imageUrl: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.tigrisfiles.io/images/${courseData.fileKey}`,
       userId: session.user.id,
     },
   });
