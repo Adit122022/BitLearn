@@ -5,16 +5,19 @@ BitLearn is a modern, full-stack Learning Management System (LMS) built with Nex
 ## 🚀 Key Features
 
 ### Authentication & Authorization
-- **Role-Based Access Control (RBAC):** Users are authenticated using `better-auth` and assigned strict roles (`STUDENT`, `TEACHER`, `ADMIN`).
+
+- **Role-Based Access Control (RBAC):** Users are authenticated using `better-auth` and assigned strict roles (`user`, `admin`).
 - **Middleware Protection:** Route access is strictly protected. Students are locked out of `/admin` creator studios, while unauthenticated users are redirected to login pages before viewing the `/dashboard` or `/classroom`.
 
 ### Instructor Tools (Teacher Studio)
+
 - **Teacher Onboarding:** Users can dynamically apply to become instructors via the `/become-teacher` pipeline, which admins review via the `/admin/teacher-applications` dashboard.
 - **Course Creation & Editing:** A rich WYSIWYG editor and intuitive form interface component (`CourseForm`) allows teachers to draft, price, categorize, and categorize their courses.
 - **Curriculum Builder:** Teachers have access to an interactive drag-and-drop Curriculum Manager. They can define modules, toggle "free previews", and attach individual video lessons to their modules.
 - **Direct S3 Uploads:** An integrated Drag-and-Drop Uploader requests secure, short-lived presigned URLs from the Next.js API, pushing multi-gigabyte video artifacts directly to AWS S3 without blocking the Node server.
 
 ### Student Experience
+
 - **Interactive Catalog:** The public `/courses` route displays all published courses in a modern, responsive grid.
 - **Landing Pages:** Beautiful detail pages (`/courses/[slug]`) breakdown the course curriculum, instructor bio, and pricing, with an integrated "Enroll" workflow.
 - **Student Dashboard:** Track enrolled courses and learning progress seamlessly.
@@ -43,7 +46,6 @@ BitLearn is a modern, full-stack Learning Management System (LMS) built with Nex
 2. Run database synchronization:
    ```bash
    npx prisma db push
-   npx prisma generate
    ```
 3. Start the development server:
    ```bash
@@ -51,6 +53,7 @@ BitLearn is a modern, full-stack Learning Management System (LMS) built with Nex
    ```
 
 ## 📝 Roadmap / Future Additions
+
 - **Real Payment Processing:** Replace the mock enrollment system with Stripe/Razorpay webhooks.
 - **Progress Tracking:** Connect the classroom sidebar markers directly to database "completed" states.
 - **Analytics Dashboard:** Build out the admin `/analytics` routes to show instructor revenue and student engagement metrics.

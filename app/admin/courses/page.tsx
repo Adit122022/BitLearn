@@ -1,9 +1,9 @@
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { getTeacherCourses } from "@/app/actions/course-actions";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Edit2, Eye, LayoutList } from "lucide-react";
+import { Edit2, LayoutList, User } from "lucide-react";
 
 export default async function CoursesPage() {
     const courses = await getTeacherCourses();
@@ -11,17 +11,17 @@ export default async function CoursesPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Your Courses</h1>
+                <h1 className="text-2xl font-bold">All Courses</h1>
                 <Link className={buttonVariants()} href="/admin/courses/create">
                     Add Course
                 </Link>
             </div>
-            
+
             {courses.length === 0 ? (
                 <div className="text-center py-10 bg-muted/20 border-2 border-dashed rounded-lg">
-                    <p className="text-muted-foreground mb-4">You haven't created any courses yet.</p>
+                    <p className="text-muted-foreground mb-4">No courses found in the platform yet.</p>
                     <Link className={buttonVariants({ variant: "outline" })} href="/admin/courses/create">
-                        Create Your First Course
+                        Create First Course
                     </Link>
                 </div>
             ) : (
@@ -49,16 +49,22 @@ export default async function CoursesPage() {
                                     <span>₹{course.price}</span>
                                     <span>{course.modules.length} Modules</span>
                                 </div>
+                                {(course as any).user && (
+                                    <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                                        <User className="w-3 h-3" />
+                                        <span>{(course as any).user.name || (course as any).user.email}</span>
+                                    </div>
+                                )}
                             </CardContent>
                             <CardFooter className="flex gap-2">
-                                <Link 
-                                    href={`/admin/courses/${course.id}`} 
+                                <Link
+                                    href={`/admin/courses/${course.id}`}
                                     className={buttonVariants({ variant: "outline", size: "sm", className: "w-full flex-1" })}
                                 >
                                     <Edit2 className="w-4 h-4 mr-2" /> Edit Info
                                 </Link>
-                                <Link 
-                                    href={`/admin/courses/${course.id}/modules`} 
+                                <Link
+                                    href={`/admin/courses/${course.id}/modules`}
                                     className={buttonVariants({ variant: "outline", size: "sm", className: "w-full flex-1" })}
                                 >
                                     <LayoutList className="w-4 h-4 mr-2" /> Curriculum
@@ -69,5 +75,5 @@ export default async function CoursesPage() {
                 </div>
             )}
         </div>
-    )
+    );
 }

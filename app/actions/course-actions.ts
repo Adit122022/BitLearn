@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { courseSchema } from "@/lib/zodSchemas";
-import slugify from "slugify";
+import { revalidatePath } from "next/cache";
 
 // Helper to get authenticated teacher session
 async function getTeacherSession() {
@@ -41,9 +41,13 @@ export async function createCourse(data: unknown) {
       slug: courseData.slug,
       status: courseData.status,
       imageUrl: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.tigrisfiles.io/${courseData.fileKey}`,
-      userId: session.user.id,  
+      userId: session.user.id,
     },
   });
+
+  revalidatePath("/admin/courses");
+  revalidatePath("/courses");
+  revalidatePath("/");
 
   return course;
 }
@@ -67,7 +71,7 @@ export async function updateCourse(courseId: string, data: unknown) {
 
   const courseData = result.data;
 
-  return prisma.course.update({
+  const updated = await prisma.course.update({
     where: { id: courseId },
     data: {
       ...courseData,
@@ -76,6 +80,14 @@ export async function updateCourse(courseId: string, data: unknown) {
         : course.imageUrl,
     },
   });
+
+  revalidatePath("/admin/courses");
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath("/courses");
+  revalidatePath(`/courses/${updated.slug}`);
+  revalidatePath("/");
+
+  return updated;
 }
 
 export async function deleteCourse(courseId: string) {
@@ -90,16 +102,42 @@ export async function deleteCourse(courseId: string) {
   }
 
   await prisma.course.delete({ where: { id: courseId } });
+
+  revalidatePath("/admin/courses");
+  revalidatePath("/courses");
+  revalidatePath("/");
+
   return true;
 }
 
 export async function getTeacherCourses() {
   const session = await getTeacherSession();
+  const userRole = (session.user as any).role;
+
+  // ADMIN can see ALL courses; TEACHER only sees their own
+  const where = userRole === "ADMIN" ? {} : { userId: session.user.id };
+
   return prisma.course.findMany({
-    where: { userId: session.user.id },
+    where,
     orderBy: { createdAt: "desc" },
     include: {
       modules: true,
+      user: { select: { name: true, email: true } },
+    },
+  });
+}
+
+// Dedicated admin-only function to get all courses with full details
+export async function getAllCoursesAdmin() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userRole = (session?.user as any)?.role;
+  if (!session || userRole !== "ADMIN") throw new Error("Unauthorized");
+
+  return prisma.course.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      modules: true,
+      user: { select: { name: true, email: true } },
     },
   });
 }

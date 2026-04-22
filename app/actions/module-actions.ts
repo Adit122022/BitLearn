@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 async function getTeacherSession() {
     const session = await auth.api.getSession({
@@ -22,6 +23,7 @@ async function verifyCourseOwnership(courseId: string, userId: string, role: str
     if (!course || (course.userId !== userId && role !== "ADMIN")) {
         throw new Error("Unauthorized");
     }
+    return course;
 }
 
 const moduleSchema = z.object({
@@ -40,7 +42,7 @@ export async function createModule(courseId: string, data: { title: string; isPu
     });
     const newOrder = maxOrderModule ? maxOrderModule.order + 1 : 1;
 
-    return prisma.module.create({
+    const result = await prisma.module.create({
         data: {
             courseId,
             title: data.title,
@@ -48,6 +50,11 @@ export async function createModule(courseId: string, data: { title: string; isPu
             order: newOrder
         }
     });
+
+    revalidatePath(`/admin/courses/${courseId}/modules`);
+    revalidatePath(`/courses`);
+
+    return result;
 }
 
 export async function updateModule(moduleId: string, data: { title?: string; isPublic?: boolean; order?: number }) {
@@ -57,10 +64,14 @@ export async function updateModule(moduleId: string, data: { title?: string; isP
     
     await verifyCourseOwnership(mod.courseId, session.user.id, (session.user as any).role);
 
-    return prisma.module.update({
+    const result = await prisma.module.update({
         where: { id: moduleId },
         data
     });
+
+    revalidatePath(`/admin/courses/${mod.courseId}/modules`);
+
+    return result;
 }
 
 export async function deleteModule(moduleId: string) {
@@ -70,7 +81,11 @@ export async function deleteModule(moduleId: string) {
     
     await verifyCourseOwnership(mod.courseId, session.user.id, (session.user as any).role);
 
-    return prisma.module.delete({ where: { id: moduleId } });
+    const result = await prisma.module.delete({ where: { id: moduleId } });
+
+    revalidatePath(`/admin/courses/${mod.courseId}/modules`);
+
+    return result;
 }
 
 export async function createLesson(moduleId: string, data: { title: string; videoKey?: string; duration?: number }) {
@@ -86,7 +101,7 @@ export async function createLesson(moduleId: string, data: { title: string; vide
     });
     const newOrder = maxOrderLesson ? maxOrderLesson.order + 1 : 1;
 
-    return prisma.lesson.create({
+    const result = await prisma.lesson.create({
         data: {
             moduleId,
             title: data.title,
@@ -95,6 +110,10 @@ export async function createLesson(moduleId: string, data: { title: string; vide
             order: newOrder
         }
     });
+
+    revalidatePath(`/admin/courses/${mod.courseId}/modules`);
+
+    return result;
 }
 
 export async function updateLesson(lessonId: string, data: { title?: string; videoKey?: string; duration?: number; order?: number }) {
@@ -104,10 +123,14 @@ export async function updateLesson(lessonId: string, data: { title?: string; vid
     
     await verifyCourseOwnership(lesson.module.courseId, session.user.id, (session.user as any).role);
 
-    return prisma.lesson.update({
+    const result = await prisma.lesson.update({
         where: { id: lessonId },
         data
     });
+
+    revalidatePath(`/admin/courses/${lesson.module.courseId}/modules`);
+
+    return result;
 }
 
 export async function deleteLesson(lessonId: string) {
@@ -117,5 +140,9 @@ export async function deleteLesson(lessonId: string) {
     
     await verifyCourseOwnership(lesson.module.courseId, session.user.id, (session.user as any).role);
 
-    return prisma.lesson.delete({ where: { id: lessonId } });
+    const result = await prisma.lesson.delete({ where: { id: lessonId } });
+
+    revalidatePath(`/admin/courses/${lesson.module.courseId}/modules`);
+
+    return result;
 }
