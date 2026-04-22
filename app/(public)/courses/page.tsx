@@ -25,10 +25,10 @@ export default async function PublicCoursesPage() {
                         <Card key={course.id} className="flex flex-col h-full overflow-hidden hover:shadow-lg transition-all group">
                             <div className="aspect-video w-full relative bg-muted overflow-hidden">
                                 {course.imageUrl ? (
-                                    <img 
-                                        src={course.imageUrl} 
-                                        alt={course.title} 
-                                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" 
+                                    <img
+                                        src={course.imageUrl}
+                                        alt={course.title}
+                                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">No Image</div>
@@ -58,8 +58,8 @@ export default async function PublicCoursesPage() {
                                 <div className="font-bold text-lg">
                                     {course.price === 0 ? "Free" : `₹${course.price}`}
                                 </div>
-                                <Link 
-                                    href={`/courses/${course.slug}`} 
+                                <Link
+                                    href={`/courses/${course.slug}`}
                                     className={buttonVariants({ variant: "default", size: "sm", className: "rounded-full px-4" })}
                                 >
                                     View Course
