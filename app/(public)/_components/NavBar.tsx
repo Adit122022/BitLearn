@@ -14,12 +14,13 @@ import { useState, useEffect } from "react";
 import { useSignout } from "@/hooks/use-signout";
 
 
-const navigationItems = [
+const baseNavItems = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/courses" },
   { name: "Dashboard", href: "/dashboard" },
   { name: "Contact", href: "/contact" },
 ]
+
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { handleSignout } = useSignout();
@@ -38,6 +39,11 @@ export default function Navbar() {
 
   const router = useRouter();
   const { data: session } = authClient.useSession();
+  const userRole = (session?.user as any)?.role;
+
+  const navigationItems = userRole === "UNIVERSITY_ADMIN"
+    ? [...baseNavItems, { name: "University Dashboard", href: "/university/dashboard" }]
+    : [...baseNavItems, { name: "For Universities", href: "/request-university" }];
   const username = session?.user?.name && session?.user?.name.length > 0 ? session?.user?.name.charAt(0).toUpperCase() : session?.user?.email.slice(0, 2).toUpperCase();
   const avatarURL = session?.user?.image ?? `https://avatar.vercel.sh/${session?.user?.email.split("@")[0]}.svg?text=${username?.toLowerCase()}&size=100`;
 
@@ -117,6 +123,11 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
+                <Link href="/inbox">Inbox
+                  <DropdownMenuShortcut>⌘I</DropdownMenuShortcut>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link href="/dashboard">Dashboard
                   <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                 </Link>
@@ -125,6 +136,13 @@ export default function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link href="/admin">Teacher Studio
                       <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
+                    </Link>
+                  </DropdownMenuItem>
+              )}
+              {(session?.user as any)?.role === "UNIVERSITY_ADMIN" && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/university/dashboard">University Portal
+                      <DropdownMenuShortcut>⌘U</DropdownMenuShortcut>
                     </Link>
                   </DropdownMenuItem>
               )}

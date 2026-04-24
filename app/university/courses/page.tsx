@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { BookOpen, Users } from "lucide-react"
+import { BookOpen, Plus, Users } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -24,7 +24,7 @@ export default async function UniversityCoursesPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 lg:p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Courses</h1>
           <p className="text-muted-foreground text-sm">
@@ -32,7 +32,10 @@ export default async function UniversityCoursesPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/admin/courses/create">Create Course</Link>
+          <Link href="/university/courses/create">
+            <Plus className="size-4" />
+            Create Course
+          </Link>
         </Button>
       </div>
 
@@ -40,9 +43,9 @@ export default async function UniversityCoursesPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
             <BookOpen className="size-12 text-muted-foreground" />
-            <p className="text-muted-foreground">No courses yet for this university.</p>
+            <p className="text-muted-foreground">No courses yet.</p>
             <Button asChild variant="outline">
-              <Link href="/admin/courses/create">Create the first course</Link>
+              <Link href="/university/courses/create">Create your first course</Link>
             </Button>
           </CardContent>
         </Card>
@@ -73,19 +76,14 @@ export default async function UniversityCoursesPage() {
                   by {course.user?.name ?? "Unknown"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex items-center justify-between pt-0">
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Users className="size-3.5" />
-                    {(course._count as any).enrollments}
-                  </span>
-                  <span className="font-medium text-foreground">
-                    ₹{course.price.toLocaleString("en-IN")}
-                  </span>
-                </div>
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/admin/courses/${course.id}`}>Edit</Link>
-                </Button>
+              <CardContent className="flex items-center gap-3 pt-0 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Users className="size-3.5" />
+                  {(course._count as any).enrollments} students
+                </span>
+                <span className="font-medium text-foreground">
+                  ₹{course.price.toLocaleString("en-IN")}
+                </span>
               </CardContent>
             </Card>
           ))}

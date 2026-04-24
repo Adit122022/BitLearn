@@ -159,8 +159,18 @@ export async function getCourseBySlug(slug: string) {
     where: { slug },
     include: {
       user: {
-        select: { name: true, image: true },
+        select: {
+          name: true,
+          image: true,
+          universityTeacherOf: {
+            take: 1,
+            include: {
+              university: { select: { id: true, name: true, logo: true } },
+            },
+          },
+        },
       },
+      university: { select: { id: true, name: true, logo: true } },
       modules: {
         orderBy: { order: "asc" },
         include: {

@@ -8,6 +8,7 @@ import {
   IconSettings,
   IconHelp,
   IconBuildingSkyscraper,
+  IconInbox,
 } from "@tabler/icons-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -30,6 +31,7 @@ const navItems = [
   { title: "Dashboard", url: "/university/dashboard", icon: IconDashboard },
   { title: "Teachers", url: "/university/teachers", icon: IconUsers },
   { title: "Courses", url: "/university/courses", icon: IconListDetails },
+  { title: "Inbox", url: "/inbox", icon: IconInbox },
 ]
 
 const navSecondary = [

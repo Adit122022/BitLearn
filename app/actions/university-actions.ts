@@ -3,7 +3,9 @@
 import { prisma } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
+import { revalidatePath } from "next/cache"
 import slugify from "slugify"
+import { courseSchema } from "@/lib/zodSchemas"
 
 async function getAdminSession() {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -239,4 +241,48 @@ export async function getAllTeachersForAssignment() {
     select: { id: true, name: true, email: true, image: true },
     orderBy: { name: "asc" },
   })
+}
+
+export async function getAllUsersForInvite() {
+  await getUniversityAdminSession()
+
+  return prisma.user.findMany({
+    where: { role: { in: ["TEACHER", "STUDENT"] } },
+    select: { id: true, name: true, email: true, image: true, role: true },
+    orderBy: { name: "asc" },
+  })
+}
+
+export async function createUniversityCourse(data: unknown) {
+  const session = await getUniversityAdminSession()
+  const userId = session.user.id
+
+  const result = courseSchema.safeParse(data)
+  if (!result.success) throw new Error("Invalid course data")
+  const courseData = result.data
+
+  const adminRecord = await prisma.universityAdmin.findFirst({ where: { userId } })
+  if (!adminRecord) throw new Error("No university association found")
+
+  const course = await prisma.course.create({
+    data: {
+      title: courseData.title,
+      description: courseData.description,
+      fileKey: courseData.fileKey,
+      price: courseData.price,
+      duration: courseData.duration,
+      level: courseData.level,
+      category: courseData.category,
+      smallDescription: courseData.smallDescription,
+      slug: courseData.slug,
+      status: courseData.status,
+      imageUrl: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.tigrisfiles.io/${courseData.fileKey}`,
+      userId,
+      universityId: adminRecord.universityId,
+    },
+  })
+
+  revalidatePath("/university/courses")
+  revalidatePath("/courses")
+  return course
 }

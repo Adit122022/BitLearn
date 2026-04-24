@@ -22,7 +22,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
-  role          String?   @default("user")
+  role          String    @default("STUDENT")
   banned        Boolean?
   banReason     String?
   banExpires    DateTime?
@@ -34,6 +34,9 @@ model User {
   teacherApplication  TeacherApplication?
   universityAdminOf   UniversityAdmin[]
   universityTeacherOf UniversityTeacher[]
+  lessonProgress      LessonProgress[]
+  sentNotifications     Notification[] @relation("SentNotifications")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
 
   @@unique([email])
   @@map("user")
@@ -119,8 +122,9 @@ model Course {
 
   modules          Module[]
   enrollments      Enrollment[]
-  university       University?  @relation(fields: [universityId], references: [id])
+  university       University?    @relation(fields: [universityId], references: [id])
   universityId     String?
+  notifications    Notification[]
 
   @@map("course")
 }
@@ -146,9 +150,10 @@ model Lesson {
   order       Int
   duration    Int      @default(0) // in seconds
   moduleId    String
-  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  module      Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress    LessonProgress[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@map("lesson")
 }
@@ -197,6 +202,44 @@ model TeacherApplication {
   @@map("teacher_application")
 }
 
+model LessonProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  lessonId  String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+enum UniversityRequestStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+model UniversityRequest {
+  id          String                  @id @default(uuid())
+  name        String
+  email       String
+  website     String?
+  description String?
+  contactName String
+  contactEmail String
+  message     String?
+  status      UniversityRequestStatus @default(Pending)
+  adminNote   String?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@map("university_request")
+}
+
 model University {
   id          String   @id @default(uuid())
   name        String
@@ -209,11 +252,46 @@ model University {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  admins   UniversityAdmin[]
-  teachers UniversityTeacher[]
-  courses  Course[]
+  admins        UniversityAdmin[]
+  teachers      UniversityTeacher[]
+  courses       Course[]
+  notifications Notification[]
 
   @@map("university")
+}
+
+enum NotificationType {
+  UNIVERSITY_INVITE
+  COURSE_ASSIGNMENT
+  GENERAL
+}
+
+enum NotificationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  READ
+}
+
+model Notification {
+  id           String             @id @default(uuid())
+  type         NotificationType   @default(GENERAL)
+  status       NotificationStatus @default(PENDING)
+  title        String
+  message      String?
+  senderId     String?
+  receiverId   String
+  universityId String?
+  courseId     String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  sender     User?       @relation("SentNotifications", fields: [senderId], references: [id], onDelete: SetNull)
+  receiver   User        @relation("ReceivedNotifications", fields: [receiverId], references: [id], onDelete: Cascade)
+  university University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  course     Course?     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("notification")
 }
 
 model UniversityAdmin {

@@ -5,9 +5,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Clock, GraduationCap, Layers, PlayCircle, Unlock, Lock } from "lucide-react";
+import { Clock, GraduationCap, Layers, PlayCircle, Unlock, Lock, Building2 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const p = await params;
@@ -39,14 +40,25 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                     <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">{course.title}</h1>
                     <p className="text-xl text-muted-foreground leading-relaxed">{course.smallDescription}</p>
                     
-                    <div className="flex items-center gap-4 pt-4">
-                        <div className="w-10 h-10 rounded-full bg-muted overflow-hidden">
+                    <div className="flex items-center gap-4 pt-4 flex-wrap">
+                        <div className="w-10 h-10 rounded-full bg-muted overflow-hidden shrink-0">
                             {course.user?.image && <img src={course.user.image} alt="Instructor" className="w-full h-full object-cover" />}
                         </div>
                         <div>
                             <p className="font-semibold">{course.user?.name || "Instructor"}</p>
                             <p className="text-sm text-muted-foreground">Course Creator</p>
                         </div>
+                        {/* University badge — show course university OR instructor's university affiliation */}
+                        {(() => {
+                            const uni = course.university ?? course.user?.universityTeacherOf?.[0]?.university
+                            if (!uni) return null
+                            return (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full text-xs font-medium text-primary">
+                                    <Building2 className="size-3.5" />
+                                    {uni.name}
+                                </div>
+                            )
+                        })()}
                     </div>
                 </div>
 
@@ -100,7 +112,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                         <h2 className="text-2xl font-bold">About this course</h2>
                         <div 
                             className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: course.description }} 
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }}
                         />
                     </section>
 

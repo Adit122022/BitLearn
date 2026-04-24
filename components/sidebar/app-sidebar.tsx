@@ -10,6 +10,8 @@ import {
   IconSettings,
   IconUsers,
   IconBuildingSkyscraper,
+  IconMailForward,
+  IconInbox,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/sidebar/nav-main"
@@ -55,9 +57,19 @@ const data = {
       icon: IconBuildingSkyscraper,
     },
     {
+      title: "University Requests",
+      url: "/admin/university-requests",
+      icon: IconMailForward,
+    },
+    {
       title: "Analytics",
       url: "#",
       icon: IconChartBar,
+    },
+    {
+      title: "Inbox",
+      url: "/inbox",
+      icon: IconInbox,
     },
   ],
   navSecondary: [
@@ -90,7 +102,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (
       item.title === "Teacher Applications" ||
       item.title === "User Management" ||
-      item.title === "Universities"
+      item.title === "Universities" ||
+      item.title === "University Requests"
     ) {
       return isAdmin;
     }

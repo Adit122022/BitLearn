@@ -1,15 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { UserPlus, Trash2, Search } from "lucide-react"
+import { UserPlus, Trash2, Search, Clock, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   getMyUniversity,
   getUniversityTeachers,
-  assignTeacherToUniversity,
   removeTeacherFromUniversity,
-  getAllTeachersForAssignment,
+  getAllUsersForInvite,
 } from "@/app/actions/university-actions"
+import { sendUniversityInvite } from "@/app/actions/notification-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -50,19 +50,25 @@ type Teacher = {
   user: { id: string; name: string; email: string; image: string | null }
 }
 
-type AvailableTeacher = { id: string; name: string; email: string; image: string | null }
+type AvailableUser = {
+  id: string
+  name: string
+  email: string
+  image: string | null
+  role: string
+}
 
 export default function UniversityTeachersPage() {
   const [universityId, setUniversityId] = React.useState<string>("")
   const [teachers, setTeachers] = React.useState<Teacher[]>([])
-  const [available, setAvailable] = React.useState<AvailableTeacher[]>([])
+  const [available, setAvailable] = React.useState<AvailableUser[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
-  const [assignOpen, setAssignOpen] = React.useState(false)
-  const [selectedTeacher, setSelectedTeacher] = React.useState("")
+  const [inviteOpen, setInviteOpen] = React.useState(false)
+  const [selectedUser, setSelectedUser] = React.useState("")
   const [subject, setSubject] = React.useState("")
-  const [assigning, setAssigning] = React.useState(false)
-  const [teacherSearch, setTeacherSearch] = React.useState("")
+  const [sending, setSending] = React.useState(false)
+  const [userSearch, setUserSearch] = React.useState("")
 
   React.useEffect(() => {
     load()
@@ -74,7 +80,7 @@ export default function UniversityTeachersPage() {
       setUniversityId(uni.id)
       const [t, a] = await Promise.all([
         getUniversityTeachers(uni.id),
-        getAllTeachersForAssignment(),
+        getAllUsersForInvite(),
       ])
       setTeachers(t as any)
       setAvailable(a as any)
@@ -85,21 +91,20 @@ export default function UniversityTeachersPage() {
     }
   }
 
-  async function handleAssign() {
-    if (!selectedTeacher) return
-    setAssigning(true)
+  async function handleSendInvite() {
+    if (!selectedUser) return
+    setSending(true)
     try {
-      await assignTeacherToUniversity(universityId, selectedTeacher, subject || undefined)
-      toast.success("Teacher assigned successfully")
-      setAssignOpen(false)
-      setSelectedTeacher("")
+      await sendUniversityInvite(universityId, selectedUser, subject || undefined)
+      toast.success("Invitation sent! The user will see it in their inbox.")
+      setInviteOpen(false)
+      setSelectedUser("")
       setSubject("")
-      setTeacherSearch("")
-      load()
+      setUserSearch("")
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to assign teacher")
+      toast.error(e.message ?? "Failed to send invite")
     } finally {
-      setAssigning(false)
+      setSending(false)
     }
   }
 
@@ -122,8 +127,8 @@ export default function UniversityTeachersPage() {
 
   const filteredAvailable = available.filter(
     (u) =>
-      (u.name.toLowerCase().includes(teacherSearch.toLowerCase()) ||
-        u.email.toLowerCase().includes(teacherSearch.toLowerCase())) &&
+      (u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+        u.email.toLowerCase().includes(userSearch.toLowerCase())) &&
       !teachers.some((t) => t.userId === u.id)
   )
 
@@ -141,62 +146,63 @@ export default function UniversityTeachersPage() {
         <div>
           <h1 className="text-2xl font-semibold">Teachers</h1>
           <p className="text-muted-foreground text-sm">
-            Manage teachers assigned to your university
+            Send invitations to users and teachers to join your university
           </p>
         </div>
-        <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="size-4" />
-              Assign Teacher
+              Invite Teacher
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Assign Teacher</DialogTitle>
+              <DialogTitle>Invite a Teacher</DialogTitle>
               <DialogDescription>
-                Select a teacher from the platform to assign to your university.
+                Select a user to send an invitation. They will see it in their inbox and can accept or decline.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label>Search Teachers</Label>
+                <Label>Search Users</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
                   <Input
                     placeholder="Search by name or email..."
                     className="pl-8"
-                    value={teacherSearch}
-                    onChange={(e) => setTeacherSearch(e.target.value)}
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
                   />
                 </div>
                 <div className="max-h-48 overflow-y-auto flex flex-col gap-1 border rounded-md p-2">
                   {filteredAvailable.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
-                      No available teachers found
+                      No users found
                     </p>
                   ) : (
                     filteredAvailable.map((u) => (
                       <button
                         key={u.id}
                         type="button"
-                        onClick={() => setSelectedTeacher(u.id)}
+                        onClick={() => setSelectedUser(u.id)}
                         className={`flex items-center gap-2 p-2 rounded text-left hover:bg-muted transition-colors ${
-                          selectedTeacher === u.id ? "bg-muted" : ""
+                          selectedUser === u.id ? "bg-muted" : ""
                         }`}
                       >
                         <Avatar className="size-7">
                           <AvatarImage src={u.image ?? ""} />
                           <AvatarFallback className="text-xs">{u.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">{u.name}</p>
                           <p className="text-xs text-muted-foreground">{u.email}</p>
                         </div>
-                        {selectedTeacher === u.id && (
-                          <Badge className="ml-auto" variant="secondary">
-                            Selected
-                          </Badge>
+                        <Badge variant="outline" className="text-xs shrink-0">
+                          {u.role}
+                        </Badge>
+                        {selectedUser === u.id && (
+                          <CheckCircle2 className="size-4 text-primary shrink-0" />
                         )}
                       </button>
                     ))
@@ -213,15 +219,23 @@ export default function UniversityTeachersPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setAssignOpen(false)}>
+              <Button variant="outline" onClick={() => setInviteOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAssign} disabled={!selectedTeacher || assigning}>
-                {assigning ? "Assigning..." : "Assign Teacher"}
+              <Button onClick={handleSendInvite} disabled={!selectedUser || sending}>
+                {sending ? "Sending..." : "Send Invitation"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* Invite flow info */}
+      <div className="flex items-start gap-2 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg text-sm text-blue-700 dark:text-blue-400">
+        <Clock className="size-4 shrink-0 mt-0.5" />
+        <p>
+          Invitations are sent to the user's inbox. Once they accept, they'll appear here as a member of your university.
+        </p>
       </div>
 
       <div className="relative max-w-sm">
@@ -238,7 +252,7 @@ export default function UniversityTeachersPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
             <p className="text-muted-foreground">
-              {search ? "No teachers match your search." : "No teachers assigned yet."}
+              {search ? "No teachers match your search." : "No teachers have joined yet. Send invitations above."}
             </p>
           </CardContent>
         </Card>
@@ -278,8 +292,7 @@ export default function UniversityTeachersPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Remove {t.user.name}?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will remove them from your university. Their courses and account
-                        will not be affected.
+                        This will remove them from your university. Their courses and account will not be affected.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

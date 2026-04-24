@@ -2,6 +2,14 @@ import { betterFetch } from "@better-fetch/fetch";
 import type { Session } from "better-auth/types";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Routes that only ADMIN can access (not TEACHER)
+const ADMIN_ONLY_PATHS = [
+  "/admin/users",
+  "/admin/universities",
+  "/admin/teacher-applications",
+  "/admin/university-requests",
+];
+
 export async function middleware(request: NextRequest) {
   const { data } = await betterFetch<{ session: Session; user: any }>(
     "/api/auth/get-session",
@@ -22,14 +30,20 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect /admin (must be logged in AND have ADMIN or TEACHER role)
+  // Protect /admin
   if (pathname.startsWith("/admin")) {
     if (!data) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     const role = data.user.role;
+    // Must be ADMIN or TEACHER
     if (role !== "ADMIN" && role !== "TEACHER") {
       return NextResponse.redirect(new URL("/", request.url));
+    }
+    // Admin-only sub-routes: TEACHER cannot access
+    const isAdminOnly = ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p));
+    if (isAdminOnly && role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
   }
 
