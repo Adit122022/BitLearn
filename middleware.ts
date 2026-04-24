@@ -27,19 +27,27 @@ export async function middleware(request: NextRequest) {
     if (!data) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
-    
-    // Note: Assuming `role` is accessible via session.user.role
     const role = data.user.role;
     if (role !== "ADMIN" && role !== "TEACHER") {
-      // Not allowed
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
-  
+
   // Protect /classroom (must be logged in)
   if (pathname.startsWith("/classroom")) {
     if (!data) {
-        return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
+  // Protect /university (must be UNIVERSITY_ADMIN only)
+  if (pathname.startsWith("/university")) {
+    if (!data) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    const role = data.user.role;
+    if (role !== "UNIVERSITY_ADMIN") {
+      return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
@@ -47,5 +55,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/classroom/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/classroom/:path*",
+    "/university/:path*",
+  ],
 };

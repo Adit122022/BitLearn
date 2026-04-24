@@ -60,3 +60,16 @@ export async function adminDeleteCourse(courseId: string) {
     await prisma.course.delete({ where: { id: courseId } });
     return true;
 }
+
+export async function deleteMyAccount() {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session) throw new Error("Not authenticated")
+    const userId = session.user.id
+
+    await prisma.enrollment.deleteMany({ where: { userId } })
+    await prisma.teacherApplication.deleteMany({ where: { userId } })
+    await prisma.teacherProfile.deleteMany({ where: { userId } })
+    await prisma.course.deleteMany({ where: { userId } })
+    await prisma.user.delete({ where: { id: userId } })
+    return true
+}

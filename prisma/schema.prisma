@@ -30,8 +30,10 @@ model User {
   accounts      Account[]
   courses       Course[]
   enrollments   Enrollment[]
-  teacherProfile TeacherProfile?
-  teacherApplication TeacherApplication?
+  teacherProfile      TeacherProfile?
+  teacherApplication  TeacherApplication?
+  universityAdminOf   UniversityAdmin[]
+  universityTeacherOf UniversityTeacher[]
 
   @@unique([email])
   @@map("user")
@@ -117,6 +119,8 @@ model Course {
 
   modules          Module[]
   enrollments      Enrollment[]
+  university       University?  @relation(fields: [universityId], references: [id])
+  universityId     String?
 
   @@map("course")
 }
@@ -191,4 +195,50 @@ model TeacherApplication {
   updatedAt DateTime          @updatedAt
 
   @@map("teacher_application")
+}
+
+model University {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  email       String   @unique
+  logo        String?
+  description String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  admins   UniversityAdmin[]
+  teachers UniversityTeacher[]
+  courses  Course[]
+
+  @@map("university")
+}
+
+model UniversityAdmin {
+  id           String     @id @default(uuid())
+  userId       String
+  universityId String
+  createdAt    DateTime   @default(now())
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, universityId])
+  @@map("university_admin")
+}
+
+model UniversityTeacher {
+  id           String     @id @default(uuid())
+  userId       String
+  universityId String
+  subject      String?
+  createdAt    DateTime   @default(now())
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, universityId])
+  @@map("university_teacher")
 }
