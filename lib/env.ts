@@ -11,6 +11,7 @@ export const env = createEnv({
     Auth_GOOGLE_CLIENT_ID: z.string().min(1),
     Auth_GOOGLE_CLIENT_SECRET: z.string().min(1),
     RESEND_API_KEY: z.string().min(1),
+    RESEND_DOMAIN: z.string().min(1).optional(),
     ARCJET_KEY: z.string().min(1),
     ARCJET_ENV: z.enum(["development", "production"]),
     AWS_ACCESS_KEY_ID: z.string().min(1),
@@ -21,12 +22,14 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES: z.string().min(1),
+    NEXT_PUBLIC_APP_URL: z.string().url(),
   },
 
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   experimental__runtimeEnv: {
     NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES:
       process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
 });
 

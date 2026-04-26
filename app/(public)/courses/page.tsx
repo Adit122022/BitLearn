@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { BookOpen, Clock, Building2 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function PublicCoursesPage() {
     const courses = await getPublicCourses();
 
