@@ -88,13 +88,13 @@ export default async function UniversityCoursesPage() {
               </CardContent>
               <CardFooter className="flex gap-2 pt-0">
                 <Button asChild variant="outline" size="sm" className="flex-1">
-                  <Link href={`/admin/courses/${course.id}`}>
+                  <Link href={`/university/courses/${course.id}`}>
                     <Edit2 className="size-3.5 mr-1.5" />
                     Edit Info
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm" className="flex-1">
-                  <Link href={`/admin/courses/${course.id}/modules`}>
+                  <Link href={`/university/courses/${course.id}/modules`}>
                     <LayoutList className="size-3.5 mr-1.5" />
                     Curriculum
                   </Link>
