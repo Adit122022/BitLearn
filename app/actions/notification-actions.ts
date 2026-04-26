@@ -191,7 +191,7 @@ export async function sendUniversityInvite(
         ${subject ? `<p><strong>Subject/Department:</strong> ${subject}</p>` : ""}
         <p>Click the button below to accept this invitation:</p>
         <p>
-          <a href="${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/inbox?tab=university-invites"
+          <a href="${env.NEXT_PUBLIC_APP_URL || "https://bit-learn.vercel.app"}/inbox?tab=university-invites"
              style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px;">
             View Invitation
           </a>
