@@ -101,11 +101,26 @@ export async function sendUniversityInviteByEmail(
     console.log("13. Sending email (optional)")
     try {
       const inviteUrl = `${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/university-invite/${inviteToken}`
+      const fromEmail = env.RESEND_DOMAIN ? `noreply@${env.RESEND_DOMAIN}` : "onboarding@resend.dev"
+      
       await resend.emails.send({
-        from: "noreply@bitlearn.com",
+        from: `BitLearn <${fromEmail}>`,
         to: email,
-        subject: "Join as Teacher",
-        html: "<p>Click to join</p>",
+        subject: "Invitation to Join BitLearn as a Teacher",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <h2 style="color: #1f2937;">You're Invited!</h2>
+            <p style="color: #4b5563;">You have been invited to join <strong>${university.name}</strong> on BitLearn.</p>
+            <p style="color: #4b5563;">Click the button below to accept your invitation and set up your teacher account:</p>
+            <div style="margin: 30px 0;">
+              <a href="${inviteUrl}" 
+                 style="background-color: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+                Accept Invitation
+              </a>
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">This link will expire in 7 days.</p>
+          </div>
+        `,
       })
       console.log("14. Email sent")
     } catch (e) {
@@ -163,8 +178,9 @@ export async function sendUniversityInvite(
   })
 
   try {
+    const fromEmail = env.RESEND_DOMAIN ? `noreply@${env.RESEND_DOMAIN}` : "onboarding@resend.dev"
     await resend.emails.send({
-      from: `BitLearn <noreply@${env.RESEND_DOMAIN || "bitlearn.com"}>`,
+      from: `BitLearn <${fromEmail}>`,
       to: user.email,
       subject: `Join ${university.name} as a Teacher`,
       html: `

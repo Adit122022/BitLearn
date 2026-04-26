@@ -81,7 +81,21 @@ export async function updateCourse(courseId: string, data: unknown) {
     isUniversityTeacher = !!teacherRecord;
   }
 
-  if (!isCreator && !isAdmin && !isUniversityTeacher) {
+  // Check if user is an admin of the university that owns the course
+  let isUniversityAdmin = false;
+  if (course.universityId && (session.user as any).role === "UNIVERSITY_ADMIN") {
+    const adminRecord = await prisma.universityAdmin.findUnique({
+      where: {
+        userId_universityId: {
+          userId: session.user.id,
+          universityId: course.universityId,
+        },
+      },
+    });
+    isUniversityAdmin = !!adminRecord;
+  }
+
+  if (!isCreator && !isAdmin && !isUniversityTeacher && !isUniversityAdmin) {
     throw new Error("Not authorized to update this course");
   }
 
@@ -130,7 +144,21 @@ export async function deleteCourse(courseId: string) {
     isUniversityTeacher = !!teacherRecord;
   }
 
-  if (!isCreator && !isAdmin && !isUniversityTeacher) {
+  // Check if user is an admin of the university that owns the course
+  let isUniversityAdmin = false;
+  if (course.universityId && (session.user as any).role === "UNIVERSITY_ADMIN") {
+    const adminRecord = await prisma.universityAdmin.findUnique({
+      where: {
+        userId_universityId: {
+          userId: session.user.id,
+          universityId: course.universityId,
+        },
+      },
+    });
+    isUniversityAdmin = !!adminRecord;
+  }
+
+  if (!isCreator && !isAdmin && !isUniversityTeacher && !isUniversityAdmin) {
     throw new Error("Not authorized to delete this course");
   }
 

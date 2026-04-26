@@ -11,7 +11,7 @@ async function getTeacherSession() {
         headers: await headers()
     });
     const userRole = (session?.user as any)?.role;
-    if (!session || (userRole !== "TEACHER" && userRole !== "ADMIN")) {
+    if (!session || (userRole !== "TEACHER" && userRole !== "ADMIN" && userRole !== "UNIVERSITY_ADMIN")) {
         throw new Error("Unauthorized");
     }
     return session;
@@ -20,7 +20,25 @@ async function getTeacherSession() {
 // Ensure the user owns the course this module belongs to
 async function verifyCourseOwnership(courseId: string, userId: string, role: string) {
     const course = await prisma.course.findUnique({ where: { id: courseId } });
-    if (!course || (course.userId !== userId && role !== "ADMIN")) {
+    if (!course) throw new Error("Course not found");
+
+    const isCreator = course.userId === userId;
+    const isAdmin = role === "ADMIN";
+    
+    let isUniversityAdmin = false;
+    if (course.universityId && role === "UNIVERSITY_ADMIN") {
+        const adminRecord = await prisma.universityAdmin.findUnique({
+            where: {
+                userId_universityId: {
+                    userId,
+                    universityId: course.universityId
+                }
+            }
+        });
+        isUniversityAdmin = !!adminRecord;
+    }
+
+    if (!isCreator && !isAdmin && !isUniversityAdmin) {
         throw new Error("Unauthorized");
     }
     return course;
