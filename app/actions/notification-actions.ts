@@ -133,6 +133,7 @@ export async function sendUniversityInviteByEmail(
   }
 
   revalidatePath("/university/teachers")
+  return { success: true, message: `Invitation sent to ${email}` }
 }
 
 export async function sendUniversityInvite(
