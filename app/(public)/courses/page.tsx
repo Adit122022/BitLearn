@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Clock } from "lucide-react";
+import { BookOpen, Clock, Building2 } from "lucide-react";
 
 export default async function PublicCoursesPage() {
     const courses = await getPublicCourses();
@@ -41,7 +41,14 @@ export default async function PublicCoursesPage() {
                                 </Badge>
                             </div>
                             <CardHeader className="flex-grow">
-                                <CardTitle className="line-clamp-2 leading-snug">{course.title}</CardTitle>
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                    <CardTitle className="line-clamp-2 leading-snug flex-1">{course.title}</CardTitle>
+                                    {course.university && (
+                                        <Badge variant="secondary" className="text-xs shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 whitespace-nowrap">
+                                            University
+                                        </Badge>
+                                    )}
+                                </div>
                                 <CardDescription className="line-clamp-2 mt-2">{course.smallDescription}</CardDescription>
                             </CardHeader>
                             <CardContent>

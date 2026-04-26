@@ -9,6 +9,7 @@ import { Clock, GraduationCap, Layers, PlayCircle, Unlock, Lock, Building2 } fro
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { prisma } from "@/lib/db";
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const p = await params;
@@ -17,6 +18,20 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
     const isEnrolled = await checkEnrollment(course.id);
     const session = await auth.api.getSession({ headers: await headers() });
+
+    const isCreator = session?.user?.id === course.userId;
+    let isUniversityTeacher = false;
+    if (session?.user?.id && course.universityId) {
+        const teacherRecord = await prisma.universityTeacher.findUnique({
+            where: {
+                userId_universityId: {
+                    userId: session.user.id,
+                    universityId: course.universityId,
+                },
+            },
+        });
+        isUniversityTeacher = !!teacherRecord;
+    }
 
     async function handleEnrollment() {
         "use server"
@@ -45,7 +60,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                             {course.user?.image && <img src={course.user.image} alt="Instructor" className="w-full h-full object-cover" />}
                         </div>
                         <div>
-                            <p className="font-semibold">{course.user?.name || "Instructor"}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="font-semibold">{course.user?.name || "Instructor"}</p>
+                                {course.university && (
+                                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                                        University Teacher
+                                    </Badge>
+                                )}
+                            </div>
                             <p className="text-sm text-muted-foreground">Course Creator</p>
                         </div>
                         {/* University badge — show course university OR instructor's university affiliation */}
@@ -77,9 +99,16 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                 {course.price === 0 ? "Free" : `₹${course.price}`}
                             </div>
                             
-                            {isEnrolled ? (
-                                <Link 
-                                    href={`/classroom/${course.id}`} 
+                            {isCreator || isUniversityTeacher ? (
+                                <Link
+                                    href={`/admin/courses/${course.id}`}
+                                    className={buttonVariants({ className: "w-full text-lg h-12" })}
+                                >
+                                    Edit Course
+                                </Link>
+                            ) : isEnrolled ? (
+                                <Link
+                                    href={`/classroom/${course.id}`}
                                     className={buttonVariants({ className: "w-full text-lg h-12" })}
                                 >
                                     Go to Classroom

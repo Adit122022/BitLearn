@@ -61,11 +61,27 @@ export async function updateCourse(courseId: string, data: unknown) {
   }
 
   const course = await prisma.course.findUnique({ where: { id: courseId } });
-  if (
-    !course ||
-    (course.userId !== session.user.id &&
-      (session.user as any).role !== "ADMIN")
-  ) {
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  const isCreator = course.userId === session.user.id;
+  const isAdmin = (session.user as any).role === "ADMIN";
+  let isUniversityTeacher = false;
+
+  if (course.universityId) {
+    const teacherRecord = await prisma.universityTeacher.findUnique({
+      where: {
+        userId_universityId: {
+          userId: session.user.id,
+          universityId: course.universityId,
+        },
+      },
+    });
+    isUniversityTeacher = !!teacherRecord;
+  }
+
+  if (!isCreator && !isAdmin && !isUniversityTeacher) {
     throw new Error("Not authorized to update this course");
   }
 
@@ -93,11 +109,28 @@ export async function updateCourse(courseId: string, data: unknown) {
 export async function deleteCourse(courseId: string) {
   const session = await getTeacherSession();
   const course = await prisma.course.findUnique({ where: { id: courseId } });
-  if (
-    !course ||
-    (course.userId !== session.user.id &&
-      (session.user as any).role !== "ADMIN")
-  ) {
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  const isCreator = course.userId === session.user.id;
+  const isAdmin = (session.user as any).role === "ADMIN";
+  let isUniversityTeacher = false;
+
+  if (course.universityId) {
+    const teacherRecord = await prisma.universityTeacher.findUnique({
+      where: {
+        userId_universityId: {
+          userId: session.user.id,
+          universityId: course.universityId,
+        },
+      },
+    });
+    isUniversityTeacher = !!teacherRecord;
+  }
+
+  if (!isCreator && !isAdmin && !isUniversityTeacher) {
     throw new Error("Not authorized to delete this course");
   }
 
@@ -150,6 +183,9 @@ export async function getPublicCourses() {
       user: {
         select: { name: true, image: true },
       },
+      university: {
+        select: { id: true, name: true, logo: true },
+      },
     },
   });
 }
@@ -160,10 +196,10 @@ export async function getCourseBySlug(slug: string) {
     include: {
       user: {
         select: {
+          id: true,
           name: true,
           image: true,
           universityTeacherOf: {
-            take: 1,
             include: {
               university: { select: { id: true, name: true, logo: true } },
             },
