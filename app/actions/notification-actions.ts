@@ -280,6 +280,12 @@ export async function sendCourseAssignment(
   ])
   if (!university || !course) throw new Error("University or course not found")
 
+  // Actually assign the course by updating the userId (owner)
+  await prisma.course.update({
+    where: { id: courseId },
+    data: { userId: userId }
+  })
+
   await prisma.notification.create({
     data: {
       type: "COURSE_ASSIGNMENT",

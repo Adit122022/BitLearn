@@ -67,19 +67,6 @@ export async function updateCourse(courseId: string, data: unknown) {
 
   const isCreator = course.userId === session.user.id;
   const isAdmin = (session.user as any).role === "ADMIN";
-  let isUniversityTeacher = false;
-
-  if (course.universityId) {
-    const teacherRecord = await prisma.universityTeacher.findUnique({
-      where: {
-        userId_universityId: {
-          userId: session.user.id,
-          universityId: course.universityId,
-        },
-      },
-    });
-    isUniversityTeacher = !!teacherRecord;
-  }
 
   // Check if user is an admin of the university that owns the course
   let isUniversityAdmin = false;
@@ -95,7 +82,7 @@ export async function updateCourse(courseId: string, data: unknown) {
     isUniversityAdmin = !!adminRecord;
   }
 
-  if (!isCreator && !isAdmin && !isUniversityTeacher && !isUniversityAdmin) {
+  if (!isCreator && !isAdmin && !isUniversityAdmin) {
     throw new Error("Not authorized to update this course");
   }
 
@@ -130,19 +117,7 @@ export async function deleteCourse(courseId: string) {
 
   const isCreator = course.userId === session.user.id;
   const isAdmin = (session.user as any).role === "ADMIN";
-  let isUniversityTeacher = false;
 
-  if (course.universityId) {
-    const teacherRecord = await prisma.universityTeacher.findUnique({
-      where: {
-        userId_universityId: {
-          userId: session.user.id,
-          universityId: course.universityId,
-        },
-      },
-    });
-    isUniversityTeacher = !!teacherRecord;
-  }
 
   // Check if user is an admin of the university that owns the course
   let isUniversityAdmin = false;
@@ -158,7 +133,7 @@ export async function deleteCourse(courseId: string) {
     isUniversityAdmin = !!adminRecord;
   }
 
-  if (!isCreator && !isAdmin && !isUniversityTeacher && !isUniversityAdmin) {
+  if (!isCreator && !isAdmin && !isUniversityAdmin) {
     throw new Error("Not authorized to delete this course");
   }
 

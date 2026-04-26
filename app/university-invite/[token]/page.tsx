@@ -75,7 +75,7 @@ export default async function UniversityInvitePage({ params }: { params: Promise
       prisma.verification.delete({ where: { id: verification.id } }),
     ])
 
-    redirect(`/university/dashboard?invited=true`)
+    redirect(`/login?accepted=true`)
   }
 
   return (

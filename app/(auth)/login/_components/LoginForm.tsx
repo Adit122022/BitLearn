@@ -20,6 +20,13 @@ export function LoginForm() {
     const isEmailValid = email.includes("@") && email.includes(".") && email.length > 0
     const router = useRouter();
 
+    React.useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get("accepted") === "true") {
+            toast.success("Invitation accepted! Please sign in to access your portal.");
+        }
+    }, []);
+
     console.log("Login Page ->", githubPending)
     async function SignWIthGIthub() {
         startGithubTransition(async () => {

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { UserPlus, Trash2, Search, Clock, CheckCircle2, Mail } from "lucide-react"
+import { UserPlus, Trash2, Search, Clock, CheckCircle2, Mail, BookPlus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   getMyUniversity,
@@ -9,7 +9,8 @@ import {
   removeTeacherFromUniversity,
   getAllUsersForInvite,
 } from "@/app/actions/university-actions"
-import { sendUniversityInvite, sendUniversityInviteByEmail } from "@/app/actions/notification-actions"
+import { sendUniversityInvite, sendUniversityInviteByEmail, sendCourseAssignment } from "@/app/actions/notification-actions"
+import { getUniversityCourses } from "@/app/actions/university-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -71,6 +72,11 @@ export default function UniversityTeachersPage() {
   const [subject, setSubject] = React.useState("")
   const [sending, setSending] = React.useState(false)
   const [userSearch, setUserSearch] = React.useState("")
+  const [assignOpen, setAssignOpen] = React.useState(false)
+  const [assigningTeacher, setAssigningTeacher] = React.useState<Teacher | null>(null)
+  const [universityCourses, setUniversityCourses] = React.useState<any[]>([])
+  const [loadingCourses, setLoadingCourses] = React.useState(false)
+  const [selectedCourseId, setSelectedCourseId] = React.useState("")
 
   React.useEffect(() => {
     load()
@@ -90,6 +96,36 @@ export default function UniversityTeachersPage() {
       toast.error(e.message ?? "Failed to load")
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleAssignCourse() {
+    if (!assigningTeacher || !selectedCourseId) return
+    setSending(true)
+    try {
+      await sendCourseAssignment(universityId, selectedCourseId, assigningTeacher.user.id)
+      toast.success(`Course assigned to ${assigningTeacher.user.name}`)
+      setAssignOpen(false)
+      setSelectedCourseId("")
+      setAssigningTeacher(null)
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to assign course")
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function openAssignDialog(teacher: Teacher) {
+    setAssigningTeacher(teacher)
+    setAssignOpen(true)
+    setLoadingCourses(true)
+    try {
+      const courses = await getUniversityCourses(universityId)
+      setUniversityCourses(courses)
+    } catch (e: any) {
+      toast.error("Failed to load courses")
+    } finally {
+      setLoadingCourses(false)
     }
   }
 
@@ -297,6 +333,63 @@ export default function UniversityTeachersPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Assign Course</DialogTitle>
+              <DialogDescription>
+                Select a course to assign to {assigningTeacher?.user.name}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-4 py-4">
+              {loadingCourses ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : universityCourses.length === 0 ? (
+                <p className="text-center py-8 text-sm text-muted-foreground">
+                  No courses found in this university.
+                </p>
+              ) : (
+                <div className="max-h-64 overflow-y-auto flex flex-col gap-2 border rounded-md p-2">
+                  {universityCourses.map((course) => (
+                    <button
+                      key={course.id}
+                      onClick={() => setSelectedCourseId(course.id)}
+                      className={`flex flex-col p-3 rounded-md border text-left transition-colors hover:bg-muted ${
+                        selectedCourseId === course.id ? "border-primary bg-primary/5" : "border-transparent"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-sm line-clamp-1">{course.title}</span>
+                        {selectedCourseId === course.id && <CheckCircle2 className="size-4 text-primary shrink-0" />}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-[10px] h-4">
+                          {course.status}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          Owned by: {course.user?.name || "Unknown"}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAssignOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAssignCourse} disabled={!selectedCourseId || sending}>
+                {sending ? "Assigning..." : "Assign Course"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Invite flow info */}
@@ -346,11 +439,22 @@ export default function UniversityTeachersPage() {
                 </div>
               </CardHeader>
               <CardContent className="flex items-center justify-between pt-0">
-                {t.subject ? (
-                  <Badge variant="secondary">{t.subject}</Badge>
-                ) : (
-                  <span className="text-xs text-muted-foreground">No subject assigned</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {t.subject ? (
+                    <Badge variant="secondary">{t.subject}</Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">No subject assigned</span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5"
+                    onClick={() => openAssignDialog(t)}
+                  >
+                    <BookPlus className="size-3.5" />
+                    Assign
+                  </Button>
+                </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="size-8 text-destructive">
