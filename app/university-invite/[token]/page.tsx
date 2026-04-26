@@ -11,7 +11,7 @@ export default async function UniversityInvitePage({ params }: { params: Promise
   const p = await params
   const session = await auth.api.getSession({ headers: await headers() })
 
-  // Find the invitation by token
+  // Find the invitation by token (Read-Only)
   const verification = await prisma.verification.findFirst({
     where: {
       value: p.token,
@@ -36,43 +36,30 @@ export default async function UniversityInvitePage({ params }: { params: Promise
     notFound()
   }
 
-  // If user is logged in, accept the invite directly
-  if (session?.user?.id) {
-    if (session.user.email !== invitedEmail) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <CardTitle className="text-destructive">Email Mismatch</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">
-                You're logged in as <strong>{session.user.email}</strong>, but this invitation is for <strong>{invitedEmail}</strong>.
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Please log out and log in with the correct email to accept this invitation.
-              </p>
-              <Button onClick={() => window.location.href = "/api/auth/signout"} className="w-full">
-                Sign Out
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    }
+  const isLoggedIn = !!session?.user?.id;
+  const isEmailMatch = session?.user?.email === invitedEmail;
+
+  // Server Action to accept invite
+  async function acceptInvite() {
+    "use server"
+    
+    // Verify session again in action
+    const currentSession = await auth.api.getSession({ headers: await headers() })
+    if (!currentSession?.user?.id) throw new Error("Not logged in")
+    if (currentSession.user.email !== invitedEmail) throw new Error("Email mismatch")
 
     // Accept the invite
     await Promise.all([
       prisma.universityTeacher.upsert({
-        where: { userId_universityId: { userId: session.user.id, universityId } },
-        create: { userId: session.user.id, universityId },
+        where: { userId_universityId: { userId: currentSession.user.id, universityId } },
+        create: { userId: currentSession.user.id, universityId },
         update: {},
       }),
       prisma.user.update({
-        where: { id: session.user.id },
+        where: { id: currentSession.user.id },
         data: { role: "TEACHER" },
       }),
-      prisma.verification.delete({ where: { id: verification.id } }),
+      prisma.verification.delete({ where: { id: verification!.id } }),
     ])
 
     redirect(`/login?accepted=true`)
@@ -134,37 +121,43 @@ export default async function UniversityInvitePage({ params }: { params: Promise
             <p className="text-sm text-muted-foreground">
               Invitation sent to: <strong>{invitedEmail}</strong>
             </p>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => window.history.back()} className="flex-1">
-                Decline
-              </Button>
-              <form action={async () => {
-                "use server"
-                const verif = await prisma.verification.findFirst({
-                  where: {
-                    value: p.token,
-                    identifier: { startsWith: "university-invite:" },
-                  },
-                })
-                if (!verif) return
-                const [_, uniId, email] = verif.identifier.split(":")
-
-                // Create a temporary pending verification so user can complete signup
-                await prisma.verification.create({
-                  data: {
-                    identifier: `pending-teacher-invite:${uniId}:${email}`,
-                    value: p.token,
-                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                  },
-                })
-
-                redirect(`/login?invite=${p.token}&email=${encodeURIComponent(email)}`)
-              }} className="flex-1">
-                <Button className="w-full">
-                  Accept & Sign In
-                </Button>
-              </form>
-            </div>
+            
+            {!isLoggedIn ? (
+               <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4 mb-4">
+                 <p className="text-sm text-amber-800 dark:text-amber-200 mb-3">
+                   You must be logged in to accept this invitation.
+                 </p>
+                 <form action={async () => {
+                   "use server"
+                   redirect("/login")
+                 }}>
+                   <Button className="w-full" variant="outline">Sign In to Accept</Button>
+                 </form>
+               </div>
+            ) : !isEmailMatch ? (
+               <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 mb-4">
+                 <p className="text-sm text-destructive font-medium mb-1">Email Mismatch</p>
+                 <p className="text-sm text-destructive/80 mb-3">
+                   You are logged in as <strong>{session?.user?.email}</strong>, but this invitation is for <strong>{invitedEmail}</strong>.
+                 </p>
+                 <form action={async () => {
+                   "use server"
+                   // Ideally redirect to logout, but we can't easily logout server-side without API route,
+                   // so we redirect to client signout
+                   redirect("/api/auth/signout")
+                 }}>
+                   <Button className="w-full" variant="destructive">Sign Out</Button>
+                 </form>
+               </div>
+            ) : (
+              <div className="flex gap-3 mt-4">
+                <form action={acceptInvite} className="flex-1">
+                  <Button className="w-full" size="lg">
+                    Accept Invitation
+                  </Button>
+                </form>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
