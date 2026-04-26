@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { UserPlus, Trash2, Search, Clock, CheckCircle2 } from "lucide-react"
+import { UserPlus, Trash2, Search, Clock, CheckCircle2, Mail } from "lucide-react"
 import { toast } from "sonner"
 import {
   getMyUniversity,
@@ -9,7 +9,7 @@ import {
   removeTeacherFromUniversity,
   getAllUsersForInvite,
 } from "@/app/actions/university-actions"
-import { sendUniversityInvite } from "@/app/actions/notification-actions"
+import { sendUniversityInvite, sendUniversityInviteByEmail } from "@/app/actions/notification-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -65,7 +65,9 @@ export default function UniversityTeachersPage() {
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
   const [inviteOpen, setInviteOpen] = React.useState(false)
+  const [inviteTab, setInviteTab] = React.useState<"existing" | "email">("email")
   const [selectedUser, setSelectedUser] = React.useState("")
+  const [inviteEmail, setInviteEmail] = React.useState("")
   const [subject, setSubject] = React.useState("")
   const [sending, setSending] = React.useState(false)
   const [userSearch, setUserSearch] = React.useState("")
@@ -92,13 +94,31 @@ export default function UniversityTeachersPage() {
   }
 
   async function handleSendInvite() {
-    if (!selectedUser) return
     setSending(true)
     try {
-      await sendUniversityInvite(universityId, selectedUser, subject || undefined)
-      toast.success("Invitation sent! The user will see it in their inbox.")
+      if (inviteTab === "email") {
+        if (!inviteEmail) {
+          toast.error("Please enter an email address")
+          return
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(inviteEmail)) {
+          toast.error("Please enter a valid email address")
+          return
+        }
+        await sendUniversityInviteByEmail(universityId, inviteEmail, subject || undefined)
+        toast.success("Invitation sent! They'll receive it at " + inviteEmail)
+      } else {
+        if (!selectedUser) {
+          toast.error("Please select a user")
+          return
+        }
+        await sendUniversityInvite(universityId, selectedUser, subject || undefined)
+        toast.success("Invitation sent! The user will see it in their inbox.")
+      }
       setInviteOpen(false)
       setSelectedUser("")
+      setInviteEmail("")
       setSubject("")
       setUserSearch("")
     } catch (e: any) {
@@ -156,73 +176,125 @@ export default function UniversityTeachersPage() {
               Invite Teacher
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Invite a Teacher</DialogTitle>
               <DialogDescription>
-                Select a user to send an invitation. They will see it in their inbox and can accept or decline.
+                Send an invitation to a teacher by email or select from existing users
               </DialogDescription>
             </DialogHeader>
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label>Search Users</Label>
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by name or email..."
-                    className="pl-8"
-                    value={userSearch}
-                    onChange={(e) => setUserSearch(e.target.value)}
-                  />
-                </div>
-                <div className="max-h-48 overflow-y-auto flex flex-col gap-1 border rounded-md p-2">
-                  {filteredAvailable.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No users found
+
+            <div className="flex gap-2 border-b">
+              <button
+                onClick={() => setInviteTab("email")}
+                className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
+                  inviteTab === "email"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Mail className="w-4 h-4 inline mr-2" />
+                By Email
+              </button>
+              <button
+                onClick={() => setInviteTab("existing")}
+                className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
+                  inviteTab === "existing"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Search className="w-4 h-4 inline mr-2" />
+                Existing Users
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4 py-4">
+              {inviteTab === "email" ? (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="teacher@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      They'll receive an email with a link to accept the invitation
                     </p>
-                  ) : (
-                    filteredAvailable.map((u) => (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => setSelectedUser(u.id)}
-                        className={`flex items-center gap-2 p-2 rounded text-left hover:bg-muted transition-colors ${
-                          selectedUser === u.id ? "bg-muted" : ""
-                        }`}
-                      >
-                        <Avatar className="size-7">
-                          <AvatarImage src={u.image ?? ""} />
-                          <AvatarFallback className="text-xs">{u.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{u.name}</p>
-                          <p className="text-xs text-muted-foreground">{u.email}</p>
-                        </div>
-                        <Badge variant="outline" className="text-xs shrink-0">
-                          {u.role}
-                        </Badge>
-                        {selectedUser === u.id && (
-                          <CheckCircle2 className="size-4 text-primary shrink-0" />
-                        )}
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Label>Search Users</Label>
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name or email..."
+                        className="pl-8"
+                        value={userSearch}
+                        onChange={(e) => setUserSearch(e.target.value)}
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto flex flex-col gap-1 border rounded-md p-2">
+                      {filteredAvailable.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No users found
+                        </p>
+                      ) : (
+                        filteredAvailable.map((u) => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => setSelectedUser(u.id)}
+                            className={`flex items-center gap-2 p-2 rounded text-left hover:bg-muted transition-colors ${
+                              selectedUser === u.id ? "bg-muted" : ""
+                            }`}
+                          >
+                            <Avatar className="size-7">
+                              <AvatarImage src={u.image ?? ""} />
+                              <AvatarFallback className="text-xs">{u.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium">{u.name}</p>
+                              <p className="text-xs text-muted-foreground">{u.email}</p>
+                            </div>
+                            <Badge variant="outline" className="text-xs shrink-0">
+                              {u.role}
+                            </Badge>
+                            {selectedUser === u.id && (
+                              <CheckCircle2 className="size-4 text-primary shrink-0" />
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="flex flex-col gap-2">
-                <Label>Subject / Department (optional)</Label>
+                <Label htmlFor="subject">Subject / Department (optional)</Label>
                 <Input
+                  id="subject"
                   placeholder="e.g. Computer Science, Mathematics"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                 />
               </div>
             </div>
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setInviteOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSendInvite} disabled={!selectedUser || sending}>
+              <Button
+                onClick={handleSendInvite}
+                disabled={(inviteTab === "email" ? !inviteEmail : !selectedUser) || sending}
+              >
                 {sending ? "Sending..." : "Send Invitation"}
               </Button>
             </DialogFooter>

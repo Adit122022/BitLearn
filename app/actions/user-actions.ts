@@ -73,3 +73,15 @@ export async function deleteMyAccount() {
     await prisma.user.delete({ where: { id: userId } })
     return true
 }
+
+export async function getUserUniversities() {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session) throw new Error("Not authenticated")
+
+    return prisma.universityTeacher.findMany({
+        where: { userId: session.user.id },
+        include: {
+            university: { select: { id: true, name: true, logo: true } }
+        }
+    })
+}

@@ -6,11 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { authClient } from "@/lib/auth-client"
-import { User, Mail, Shield, Loader2 } from "lucide-react"
+import { User, Mail, Shield, Loader2, Building2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { deleteMyAccount } from "@/app/actions/user-actions"
+import { getUserUniversities } from "@/app/actions/user-actions"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,12 +37,26 @@ export default function ProfilePage() {
   const [name, setName] = React.useState("")
   const [saving, setSaving] = React.useState(false)
   const [deleting, setDeleting] = React.useState(false)
+  const [universities, setUniversities] = React.useState<any[]>([])
+  const [loadingUniversities, setLoadingUniversities] = React.useState(true)
 
   React.useEffect(() => {
     if (session?.user) {
       setName(session.user.name ?? "")
+      loadUniversities()
     }
   }, [session])
+
+  async function loadUniversities() {
+    try {
+      const unis = await getUserUniversities()
+      setUniversities(unis)
+    } catch {
+      setUniversities([])
+    } finally {
+      setLoadingUniversities(false)
+    }
+  }
 
   if (isPending) {
     return (
@@ -99,11 +120,30 @@ export default function ProfilePage() {
               </div>
               <CardTitle>{user.name}</CardTitle>
               <CardDescription>{user.email}</CardDescription>
-              <div className="mt-4 flex justify-center">
+              <div className="mt-4 flex flex-col gap-2 items-center">
                 <Badge variant="secondary" className="px-4 py-1 text-sm bg-primary/10 text-primary flex items-center gap-2">
                   <Shield className="w-4 h-4" />
                   {role}
                 </Badge>
+                {!loadingUniversities && universities.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-2 mt-2">
+                    <TooltipProvider>
+                      {universities.map((ut) => (
+                        <Tooltip key={ut.id}>
+                          <TooltipTrigger asChild>
+                            <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border-blue-300 dark:border-blue-700 flex items-center gap-1.5 cursor-help">
+                              <Building2 className="w-3 h-3" />
+                              University
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-sm">
+                            {ut.university.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </TooltipProvider>
+                  </div>
+                )}
               </div>
             </CardHeader>
           </Card>

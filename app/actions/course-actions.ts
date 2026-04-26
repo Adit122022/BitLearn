@@ -12,7 +12,7 @@ async function getTeacherSession() {
     headers: await headers(),
   });
   const userRole = (session?.user as any)?.role;
-  if (!session || (userRole !== "TEACHER" && userRole !== "ADMIN")) {
+  if (!session || (userRole !== "TEACHER" && userRole !== "ADMIN" && userRole !== "UNIVERSITY_ADMIN")) {
     throw new Error("Unauthorized");
   }
   return session;
