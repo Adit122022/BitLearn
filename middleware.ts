@@ -36,8 +36,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     const role = data.user.role;
-    // Must be ADMIN or TEACHER
-    if (role !== "ADMIN" && role !== "TEACHER") {
+    // Must be ADMIN, TEACHER or UNIVERSITY_ADMIN
+    if (role !== "ADMIN" && role !== "TEACHER" && role !== "UNIVERSITY_ADMIN") {
       return NextResponse.redirect(new URL("/", request.url));
     }
     // Admin-only sub-routes: TEACHER cannot access
