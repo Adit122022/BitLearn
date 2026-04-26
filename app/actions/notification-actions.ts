@@ -100,6 +100,7 @@ export async function sendUniversityInviteByEmail(
     // Store invite in verification table
     await prisma.verification.create({
       data: {
+        id: `verif_${inviteToken}`,
         identifier: `university-invite:${universityId}:${email}`,
         value: inviteToken,
         expiresAt: tokenExpiry,
