@@ -187,22 +187,20 @@ export default function UniversityTeachersPage() {
             <div className="flex gap-2 border-b">
               <button
                 onClick={() => setInviteTab("email")}
-                className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
-                  inviteTab === "email"
+                className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${inviteTab === "email"
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 <Mail className="w-4 h-4 inline mr-2" />
                 By Email
               </button>
               <button
                 onClick={() => setInviteTab("existing")}
-                className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
-                  inviteTab === "existing"
+                className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${inviteTab === "existing"
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 <Search className="w-4 h-4 inline mr-2" />
                 Existing Users
@@ -250,9 +248,8 @@ export default function UniversityTeachersPage() {
                             key={u.id}
                             type="button"
                             onClick={() => setSelectedUser(u.id)}
-                            className={`flex items-center gap-2 p-2 rounded text-left hover:bg-muted transition-colors ${
-                              selectedUser === u.id ? "bg-muted" : ""
-                            }`}
+                            className={`flex items-center gap-2 p-2 rounded text-left hover:bg-muted transition-colors ${selectedUser === u.id ? "bg-muted" : ""
+                              }`}
                           >
                             <Avatar className="size-7">
                               <AvatarImage src={u.image ?? ""} />

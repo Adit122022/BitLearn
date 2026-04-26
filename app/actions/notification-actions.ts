@@ -58,82 +58,66 @@ export async function sendUniversityInviteByEmail(
   email: string,
   subject?: string
 ) {
+  console.log("1. Start")
   try {
-    console.log("1. Starting sendUniversityInviteByEmail", { universityId, email })
-
+    console.log("2. Getting session")
     const session = await getSession()
-    console.log("2. Got session")
+    console.log("3. Session OK")
 
     const role = (session.user as any).role
     if (role !== "UNIVERSITY_ADMIN" && role !== "ADMIN") {
-      throw new Error("Unauthorized")
+      throw new Error("NOT_AUTHORIZED")
     }
-    console.log("3. Auth check passed")
+    console.log("4. Auth OK")
 
+    console.log("5. Finding university:", universityId)
     const university = await prisma.university.findUnique({
       where: { id: universityId },
-      select: { name: true, email: true, logo: true },
     })
-    console.log("4. Found university:", university?.name)
+    console.log("6. University found:", !!university)
+    if (!university) throw new Error("UNIVERSITY_NOT_FOUND")
 
-    if (!university) throw new Error("University not found")
-
+    console.log("7. Checking existing user:", email)
     const existingUser = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, name: true },
     })
-    console.log("5. Checked existing user:", existingUser?.name || "none")
+    console.log("8. Existing user:", !!existingUser)
 
-    if (existingUser) {
-      const alreadyMember = await prisma.universityTeacher.findUnique({
-        where: { userId_universityId: { userId: existingUser.id, universityId } },
-      })
-      if (alreadyMember) throw new Error("User is already a member of this university")
-
-      const pendingInvite = await prisma.notification.findFirst({
-        where: {
-          receiverId: existingUser.id,
-          universityId,
-          type: "UNIVERSITY_INVITE",
-          status: "PENDING",
-        },
-      })
-      if (pendingInvite) throw new Error("A pending invite already exists for this user")
-    }
-
+    console.log("9. Creating token")
     const inviteToken = randomBytes(32).toString("hex")
     const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    console.log("6. Generated token")
+    console.log("10. Token created")
 
+    console.log("11. Creating verification")
     await prisma.verification.create({
       data: {
-        id: `verif_${inviteToken}`,
         identifier: `university-invite:${universityId}:${email}`,
         value: inviteToken,
         expiresAt: tokenExpiry,
       },
     })
-    console.log("7. Created verification record")
+    console.log("12. Verification OK")
 
-    const inviteUrl = `${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/university-invite/${inviteToken}`
-
+    console.log("13. Sending email (optional)")
     try {
+      const inviteUrl = `${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/university-invite/${inviteToken}`
       await resend.emails.send({
-        from: `BitLearn <noreply@${env.RESEND_DOMAIN || "bitlearn.com"}>`,
+        from: "noreply@bitlearn.com",
         to: email,
-        subject: `Join ${university.name} as a Teacher - BitLearn`,
-        html: `<div>Welcome!</div>`,
+        subject: "Join as Teacher",
+        html: "<p>Click to join</p>",
       })
-      console.log("8. Email sent successfully")
-    } catch (emailError) {
-      console.error("Email send failed (non-critical):", emailError)
+      console.log("14. Email sent")
+    } catch (e) {
+      console.log("14. Email failed (OK):", (e as any).message)
     }
 
+    console.log("15. Revalidating")
     revalidatePath("/university/teachers")
-    console.log("9. Done!")
-    return { success: true, message: `Invitation sent to ${email}` }
+    console.log("16. SUCCESS")
+    return { ok: true }
   } catch (error: any) {
-    console.error("FATAL ERROR:", error?.message || error)
+    console.error("ERROR:", error?.message || error)
     throw error
   }
 }
