@@ -138,7 +138,7 @@ export async function sendUniversityInvite(
   universityId: string,
   userId: string,
   subject?: string
-) {
+) {  
   const session = await getSession()
   const role = (session.user as any).role
   if (role !== "UNIVERSITY_ADMIN" && role !== "ADMIN") throw new Error("Unauthorized")
