@@ -5,10 +5,11 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { BookOpen, Plus, Users } from "lucide-react"
+import { BookOpen, Edit2, LayoutList, Plus, Users } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -85,6 +86,20 @@ export default async function UniversityCoursesPage() {
                   ₹{course.price.toLocaleString("en-IN")}
                 </span>
               </CardContent>
+              <CardFooter className="flex gap-2 pt-0">
+                <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Link href={`/admin/courses/${course.id}`}>
+                    <Edit2 className="size-3.5 mr-1.5" />
+                    Edit Info
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Link href={`/admin/courses/${course.id}/modules`}>
+                    <LayoutList className="size-3.5 mr-1.5" />
+                    Curriculum
+                  </Link>
+                </Button>
+              </CardFooter>
             </Card>
           ))}
         </div>

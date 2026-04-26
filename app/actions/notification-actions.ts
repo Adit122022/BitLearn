@@ -98,34 +98,36 @@ export async function sendUniversityInviteByEmail(
     })
     console.log("12. Verification OK")
 
-    console.log("13. Sending email (optional)")
-    try {
-      const inviteUrl = `${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/university-invite/${inviteToken}`
-      const fromEmail = env.RESEND_DOMAIN ? `noreply@${env.RESEND_DOMAIN}` : "onboarding@resend.dev"
-      
-      await resend.emails.send({
-        from: `BitLearn <${fromEmail}>`,
-        to: email,
-        subject: "Invitation to Join BitLearn as a Teacher",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-            <h2 style="color: #1f2937;">You're Invited!</h2>
-            <p style="color: #4b5563;">You have been invited to join <strong>${university.name}</strong> on BitLearn.</p>
-            <p style="color: #4b5563;">Click the button below to accept your invitation and set up your teacher account:</p>
-            <div style="margin: 30px 0;">
-              <a href="${inviteUrl}" 
-                 style="background-color: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">
-                Accept Invitation
-              </a>
-            </div>
-            <p style="color: #6b7280; font-size: 14px;">This link will expire in 7 days.</p>
+    console.log("13. Sending email")
+    const inviteUrl = `${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/university-invite/${inviteToken}`
+    const fromEmail = env.RESEND_DOMAIN ? `noreply@${env.RESEND_DOMAIN}` : "onboarding@resend.dev"
+    
+    const { data: emailData, error: emailError } = await resend.emails.send({
+      from: `${university.name} <${fromEmail}>`,
+      to: email,
+      subject: `Invitation to Join ${university.name} as a Teacher`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <h2 style="color: #1f2937;">You're Invited!</h2>
+          <p style="color: #4b5563;">You have been invited to join <strong>${university.name}</strong> on BitLearn.</p>
+          <p style="color: #4b5563;">Click the button below to accept your invitation and set up your teacher account:</p>
+          <div style="margin: 30px 0;">
+            <a href="${inviteUrl}" 
+               style="background-color: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+              Accept Invitation
+            </a>
           </div>
-        `,
-      })
-      console.log("14. Email sent")
-    } catch (e) {
-      console.log("14. Email failed (OK):", (e as any).message)
+          <p style="color: #6b7280; font-size: 14px;">This link will expire in 7 days.</p>
+        </div>
+      `,
+    })
+
+    if (emailError) {
+      console.error("Resend Email Error:", emailError)
+      throw new Error(`Failed to send email: ${emailError.message}`)
     }
+
+    console.log("14. Email sent:", emailData)
 
     console.log("15. Revalidating")
     revalidatePath("/university/teachers")
@@ -177,32 +179,34 @@ export async function sendUniversityInvite(
     },
   })
 
-  try {
-    const fromEmail = env.RESEND_DOMAIN ? `noreply@${env.RESEND_DOMAIN}` : "onboarding@resend.dev"
-    await resend.emails.send({
-      from: `BitLearn <${fromEmail}>`,
-      to: user.email,
-      subject: `Join ${university.name} as a Teacher`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Welcome, ${user.name}!</h2>
-          <p>You have been invited to join <strong>${university.name}</strong> as a teacher.</p>
-          ${subject ? `<p><strong>Subject/Department:</strong> ${subject}</p>` : ""}
-          <p>Click the button below to accept this invitation:</p>
-          <p>
-            <a href="${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/inbox?tab=university-invites"
-               style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px;">
-              View Invitation
-            </a>
-          </p>
-          <p>After accepting, you'll be able to sign in with Google, GitHub, or email and manage courses for ${university.name}.</p>
-          <p style="color: #666; font-size: 14px;">If you didn't expect this invitation, you can ignore this email or contact ${university.name}.</p>
-        </div>
-      `,
-    })
-  } catch (error) {
-    console.error("Failed to send invitation email:", error)
+  const { data: emailData, error: emailError } = await resend.emails.send({
+    from: `${university.name} <${fromEmail}>`,
+    to: user.email,
+    subject: `Join ${university.name} as a Teacher`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Welcome, ${user.name}!</h2>
+        <p>You have been invited to join <strong>${university.name}</strong> as a teacher.</p>
+        ${subject ? `<p><strong>Subject/Department:</strong> ${subject}</p>` : ""}
+        <p>Click the button below to accept this invitation:</p>
+        <p>
+          <a href="${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/inbox?tab=university-invites"
+             style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px;">
+            View Invitation
+          </a>
+        </p>
+        <p>After accepting, you'll be able to sign in with Google, GitHub, or email and manage courses for ${university.name}.</p>
+        <p style="color: #666; font-size: 14px;">If you didn't expect this invitation, you can ignore this email or contact ${university.name}.</p>
+      </div>
+    `,
+  })
+
+  if (emailError) {
+    console.error("Resend Email Error:", emailError)
+    throw new Error(`Failed to send invitation email: ${emailError.message}`)
   }
+
+  console.log("Invitation email sent:", emailData)
 
   revalidatePath("/university/teachers")
   return notification
