@@ -1,5 +1,6 @@
 {
-  "installCommand": "pnpm install",
-  "buildCommand": "prisma migrate deploy && next build",
-  "framework": "nextjs"
+  "buildCommand": "npm ci && npx prisma generate && next build",
+  "env": {
+    "PRISMA_CLI_BINARY_TARGETS": "rhel-openssl-3.0.x"
+  }
 }
