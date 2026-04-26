@@ -179,6 +179,7 @@ export async function sendUniversityInvite(
     },
   })
 
+  const fromEmail = env.RESEND_DOMAIN ? `noreply@${env.RESEND_DOMAIN}` : "onboarding@resend.dev"
   const { data: emailData, error: emailError } = await resend.emails.send({
     from: `${university.name} <${fromEmail}>`,
     to: user.email,
