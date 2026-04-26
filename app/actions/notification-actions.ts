@@ -1,5 +1,6 @@
 "use server"
 
+import { randomBytes } from "crypto"
 import { prisma } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
@@ -92,7 +93,7 @@ export async function sendUniversityInviteByEmail(
   }
 
   // Create invitation token
-  const inviteToken = require("crypto").randomBytes(32).toString("hex")
+  const inviteToken = randomBytes(32).toString("hex")
   const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
 
   // Store invite in verification table
