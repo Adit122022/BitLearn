@@ -22,10 +22,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config) => {
-    config.externals.push("@prisma/client", "@prisma/internals");
-    return config;
-  },
 };
 
 export default nextConfig;
