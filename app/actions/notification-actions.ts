@@ -59,22 +59,30 @@ export async function sendUniversityInviteByEmail(
   subject?: string
 ) {
   try {
+    console.log("1. Starting sendUniversityInviteByEmail", { universityId, email })
+
     const session = await getSession()
+    console.log("2. Got session")
+
     const role = (session.user as any).role
-    if (role !== "UNIVERSITY_ADMIN" && role !== "ADMIN") throw new Error("Unauthorized")
+    if (role !== "UNIVERSITY_ADMIN" && role !== "ADMIN") {
+      throw new Error("Unauthorized")
+    }
+    console.log("3. Auth check passed")
 
     const university = await prisma.university.findUnique({
       where: { id: universityId },
       select: { name: true, email: true, logo: true },
     })
+    console.log("4. Found university:", university?.name)
 
     if (!university) throw new Error("University not found")
 
-    // Check if user with this email already exists and is a teacher
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { id: true, name: true },
     })
+    console.log("5. Checked existing user:", existingUser?.name || "none")
 
     if (existingUser) {
       const alreadyMember = await prisma.universityTeacher.findUnique({
@@ -93,11 +101,10 @@ export async function sendUniversityInviteByEmail(
       if (pendingInvite) throw new Error("A pending invite already exists for this user")
     }
 
-    // Create invitation token
     const inviteToken = randomBytes(32).toString("hex")
-    const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+    const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    console.log("6. Generated token")
 
-    // Store invite in verification table
     await prisma.verification.create({
       data: {
         id: `verif_${inviteToken}`,
@@ -106,6 +113,7 @@ export async function sendUniversityInviteByEmail(
         expiresAt: tokenExpiry,
       },
     })
+    console.log("7. Created verification record")
 
     const inviteUrl = `${env.NEXT_PUBLIC_APP_URL || "https://bitlearn.com"}/university-invite/${inviteToken}`
 
@@ -114,30 +122,18 @@ export async function sendUniversityInviteByEmail(
         from: `BitLearn <noreply@${env.RESEND_DOMAIN || "bitlearn.com"}>`,
         to: email,
         subject: `Join ${university.name} as a Teacher - BitLearn`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #333;">Welcome to BitLearn!</h2>
-            <p>You have been invited to join <strong>${university.name}</strong> as a teacher.</p>
-            ${subject ? `<p><strong>Department:</strong> ${subject}</p>` : ""}
-            <p style="margin: 30px 0;">
-              <a href="${inviteUrl}"
-                 style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Accept Invitation
-              </a>
-            </p>
-            <p>This link expires in 7 days.</p>
-            <p style="color: #666; font-size: 14px; margin-top: 30px;">If you didn't expect this invitation, you can ignore this email.</p>
-          </div>
-        `,
+        html: `<div>Welcome!</div>`,
       })
+      console.log("8. Email sent successfully")
     } catch (emailError) {
-      console.error("Failed to send invitation email:", emailError)
+      console.error("Email send failed (non-critical):", emailError)
     }
 
     revalidatePath("/university/teachers")
+    console.log("9. Done!")
     return { success: true, message: `Invitation sent to ${email}` }
   } catch (error: any) {
-    console.error("sendUniversityInviteByEmail error:", error)
+    console.error("FATAL ERROR:", error?.message || error)
     throw error
   }
 }
