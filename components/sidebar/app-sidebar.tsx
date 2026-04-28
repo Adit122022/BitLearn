@@ -62,8 +62,13 @@ const data = {
       icon: IconMailForward,
     },
     {
+      title: "Enrollments",
+      url: "/admin/courses/enrollments",
+      icon: IconUsers,
+    },
+    {
       title: "Analytics",
-      url: "#",
+      url: "/admin/analytics",
       icon: IconChartBar,
     },
     {
