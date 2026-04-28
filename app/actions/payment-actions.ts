@@ -11,9 +11,16 @@ let razorpay: Razorpay | null = null
 
 function getRazorpay() {
   if (!razorpay) {
+    const keyId = env.RAZORPAY_KEY_ID
+    const keySecret = env.RAZORPAY_KEY_SECRET
+
+    if (!keyId || !keySecret) {
+      throw new Error("Razorpay credentials not configured properly")
+    }
+
     razorpay = new Razorpay({
-      key_id: env.RAZORPAY_KEY_ID,
-      key_secret: env.RAZORPAY_KEY_SECRET,
+      key_id: keyId,
+      key_secret: keySecret,
     })
   }
   return razorpay
