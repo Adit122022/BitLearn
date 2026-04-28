@@ -6,49 +6,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { DataTable } from "@/components/ui/data-table"
-import { Button } from "@/components/ui/button"
-import { ColumnDef } from "@tanstack/react-table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import EnrollmentActions from "./_components/enrollment-actions"
 
 export default async function EnrollmentsPage() {
   const enrollments = await getEnrollments()
-
-  const columns: ColumnDef<any>[] = [
-    {
-      accessorKey: "user.name",
-      header: "Student Name",
-    },
-    {
-      accessorKey: "user.email",
-      header: "Email",
-    },
-    {
-      accessorKey: "course.title",
-      header: "Course",
-    },
-    {
-      accessorKey: "amount",
-      header: "Amount Paid",
-      cell: ({ row }) => `₹${row.original.amount}`,
-    },
-    {
-      accessorKey: "paidAt",
-      header: "Enrollment Date",
-      cell: ({ row }) =>
-        new Date(row.original.paidAt).toLocaleDateString("en-IN"),
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => (
-        <EnrollmentActions
-          enrollmentId={row.original.id}
-          courseId={row.original.courseId}
-          studentName={row.original.user.name}
-        />
-      ),
-    },
-  ]
 
   return (
     <div className="space-y-6 p-4 lg:p-6">
@@ -67,7 +37,60 @@ export default async function EnrollmentsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={enrollments} />
+          {enrollments.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              No enrollments yet.
+            </p>
+          ) : (
+            <div className="rounded-lg border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Course</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {enrollments.map((enrollment) => (
+                    <TableRow key={enrollment.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            {enrollment.user.name}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {enrollment.user.email}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {enrollment.course.title}
+                      </TableCell>
+                      <TableCell className="text-sm font-medium">
+                        ₹{enrollment.amount}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(enrollment.paidAt).toLocaleDateString(
+                          "en-IN"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <EnrollmentActions
+                          enrollmentId={enrollment.id}
+                          courseId={enrollment.courseId}
+                          studentName={enrollment.user.name}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

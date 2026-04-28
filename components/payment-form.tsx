@@ -29,7 +29,6 @@ export default function PaymentForm({
   const [razorpayLoaded, setRazorpayLoaded] = useState(false)
 
   useEffect(() => {
-    // Load Razorpay script once on component mount
     if (document.getElementById("razorpay-script")) {
       setRazorpayLoaded(true)
       return
@@ -39,12 +38,8 @@ export default function PaymentForm({
     script.id = "razorpay-script"
     script.src = "https://checkout.razorpay.com/v1/checkout.js"
     script.async = true
-    script.onload = () => {
-      console.log("Razorpay script loaded successfully")
-      setRazorpayLoaded(true)
-    }
+    script.onload = () => setRazorpayLoaded(true)
     script.onerror = () => {
-      console.error("Failed to load Razorpay script")
       toast.error("Failed to load payment gateway. Please try again.")
     }
     document.body.appendChild(script)
@@ -58,11 +53,8 @@ export default function PaymentForm({
       }
 
       setIsLoading(true)
-      console.log("Creating payment order for course:", courseId)
 
-      // Create order on server
       const orderData = await createPaymentOrder(courseId)
-      console.log("Order created:", orderData)
 
       const options = {
         key: orderData.keyId,
@@ -77,35 +69,28 @@ export default function PaymentForm({
         },
         handler: async function (response: any) {
           try {
-            console.log("Payment response:", response)
-            const result = await verifyPayment(
+            await verifyPayment(
               orderData.orderId,
               response.razorpay_payment_id,
               response.razorpay_signature
             )
-            console.log("Payment verified:", result)
             toast.success("Payment successful! You are now enrolled.")
-            // Navigate to classroom after successful payment
             router.push(`/classroom/${courseId}`)
           } catch (error: any) {
-            console.error("Verification error:", error)
             toast.error(error.message || "Payment verification failed")
             setIsLoading(false)
           }
         },
         modal: {
           ondismiss: function () {
-            console.log("Payment modal closed")
             setIsLoading(false)
           },
         },
       }
 
-      console.log("Opening Razorpay with options:", options)
       const razorpay = new window.Razorpay(options)
       razorpay.open()
     } catch (error: any) {
-      console.error("Payment error:", error)
       toast.error(error.message || "Failed to initiate payment")
       setIsLoading(false)
     }
