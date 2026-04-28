@@ -125,9 +125,6 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                     courseId={course.id}
                                     courseTitle={course.title}
                                     price={course.price}
-                                    onSuccess={(enrollmentId) => {
-                                        redirect(`/classroom/${course.id}`);
-                                    }}
                                 />
                             )}
                             
