@@ -47,7 +47,7 @@ export default function Navbar() {
   const username = session?.user?.name && session?.user?.name.length > 0 ? session?.user?.name.charAt(0).toUpperCase() : session?.user?.email.slice(0, 2).toUpperCase();
   const avatarURL = session?.user?.image ?? `https://avatar.vercel.sh/${session?.user?.email.split("@")[0]}.svg?text=${username?.toLowerCase()}&size=100`;
 
-  return <header className="w-full sticky top-0 z-99 justify-between items-center flex py-4 px-4 md:py-5 md:px-10 backdrop-blur-md overflow-x-hidden outline-1 bg-background/50">
+  return <header className="w-full sticky top-0 z-10 justify-between items-center flex py-4 px-4 md:py-5 md:px-10 backdrop-blur-md overflow-x-hidden outline-1 bg-background/50">
     <Link className="text-xl md:text-2xl font-mono flex items-center gap-2 max-w-[45vw] sm:max-w-none" href='/'>
       <Image className="rounded-full w-8 h-8 md:w-[50px] md:h-[50px] shrink-0" src="/Logo.png" alt="Logo" width={50} height={50} />
       <span className="truncate">{Brand}</span>
@@ -133,18 +133,18 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               {((session?.user as any)?.role === "ADMIN" || (session?.user as any)?.role === "TEACHER") && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin">Teacher Studio
-                      <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
-                    </Link>
-                  </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin">Teacher Studio
+                    <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
+                  </Link>
+                </DropdownMenuItem>
               )}
               {(session?.user as any)?.role === "UNIVERSITY_ADMIN" && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/university/dashboard">University Portal
-                      <DropdownMenuShortcut>⌘U</DropdownMenuShortcut>
-                    </Link>
-                  </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/university/dashboard">University Portal
+                    <DropdownMenuShortcut>⌘U</DropdownMenuShortcut>
+                  </Link>
+                </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -172,22 +172,25 @@ export default function Navbar() {
     </div>
 
     {/* Mobile Navigation Full Screen Overlay */}
-    <div
-      className={`md:hidden absolute top-full left-0 w-full h-[100vh] bg-background border-t border-border transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"
-        }`}
-    >
-      <nav className="flex flex-col items-center justify-start pt-20 h-full gap-8 pb-32 overflow-y-auto">
-        {navigationItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="text-3xl font-semibold tracking-wider hover:text-primary transition-all duration-200"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            {item.name}
-          </Link>
-        ))}
-      </nav>
-    </div>
+    {isMobileMenuOpen && (
+      <div
+        className="md:hidden fixed inset-0 top-16 z-40 bg-background"
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        <nav className="flex flex-col items-center justify-start pt-8 gap-8 px-4">
+          {navigationItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-2xl font-semibold tracking-wider hover:text-primary transition-all duration-200"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+      </div>
+    )}
+
   </header>
 }
