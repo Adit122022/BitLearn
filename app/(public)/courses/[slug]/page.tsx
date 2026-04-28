@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { prisma } from "@/lib/db";
+import PaymentForm from "@/components/payment-form";
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const p = await params;
@@ -113,12 +114,21 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                 >
                                     Go to Classroom
                                 </Link>
-                            ) : (
+                            ) : course.price === 0 ? (
                                 <form action={handleEnrollment}>
                                     <Button type="submit" className="w-full text-lg h-12">
-                                        {course.price === 0 ? "Enroll for Free" : "Buy Now"}
+                                        Enroll for Free
                                     </Button>
                                 </form>
+                            ) : (
+                                <PaymentForm
+                                    courseId={course.id}
+                                    courseTitle={course.title}
+                                    price={course.price}
+                                    onSuccess={(enrollmentId) => {
+                                        redirect(`/classroom/${course.id}`);
+                                    }}
+                                />
                             )}
                             
                             <p className="text-center text-sm text-muted-foreground">30-day money-back guarantee</p>
