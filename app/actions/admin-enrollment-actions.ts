@@ -147,7 +147,7 @@ export async function getAdminAnalytics() {
   const session = await getSession()
   await checkAdminRole(session)
 
-  const [totalUsers, totalTeachers, totalCourses, totalEnrollments, totalRevenue, enrollmentTrend] =
+  const [totalUsers, totalTeachers, totalCourses, totalEnrollments, revenueData] =
     await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: "TEACHER" } }),
@@ -156,10 +156,6 @@ export async function getAdminAnalytics() {
       prisma.enrollment.aggregate({
         _sum: { amount: true },
       }),
-      prisma.enrollment.groupBy({
-        by: ["createdAt"],
-        _count: true,
-      }),
     ])
 
   return {
@@ -167,7 +163,7 @@ export async function getAdminAnalytics() {
     totalTeachers,
     totalCourses,
     totalEnrollments,
-    totalRevenue: enrollmentTrend._sum?.amount || 0,
+    totalRevenue: revenueData._sum?.amount || 0,
   }
 }
 
