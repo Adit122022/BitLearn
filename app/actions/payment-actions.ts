@@ -7,10 +7,17 @@ import { env } from "@/lib/env"
 import Razorpay from "razorpay"
 import crypto from "crypto"
 
-const razorpay = new Razorpay({
-  key_id: env.RAZORPAY_KEY_ID,
-  key_secret: env.RAZORPAY_KEY_SECRET,
-})
+let razorpay: Razorpay | null = null
+
+function getRazorpay() {
+  if (!razorpay) {
+    razorpay = new Razorpay({
+      key_id: env.RAZORPAY_KEY_ID,
+      key_secret: env.RAZORPAY_KEY_SECRET,
+    })
+  }
+  return razorpay
+}
 
 async function getSession() {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -40,7 +47,7 @@ export async function createPaymentOrder(courseId: string) {
 
   if (existingEnrollment) throw new Error("You are already enrolled in this course")
 
-  const razorpayOrder = await razorpay.orders.create({
+  const razorpayOrder = await getRazorpay().orders.create({
     amount: course.price * 100,
     currency: "INR",
     receipt: `bitlearn_${courseId}_${session.user.id}`,
