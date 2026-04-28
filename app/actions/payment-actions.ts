@@ -54,10 +54,13 @@ export async function createPaymentOrder(courseId: string) {
 
   if (existingEnrollment) throw new Error("You are already enrolled in this course")
 
+  // Generate a short receipt ID (Razorpay limits to 40 characters)
+  const shortReceipt = `bl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
   const razorpayOrder = await getRazorpay().orders.create({
     amount: course.price * 100,
     currency: "INR",
-    receipt: `bitlearn_${courseId}_${session.user.id}`,
+    receipt: shortReceipt,
     notes: {
       courseId,
       userId: session.user.id,
